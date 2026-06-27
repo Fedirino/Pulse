@@ -1,8 +1,7 @@
 # Changelog
 
-## v0.1.10 — 2026-06-27
-Shortcut cleanup + Hermes logo fix.
-- Removed Gmail from the apps grid
-- Added LinkedIn to the apps grid
-- Swapped Hermes over to the clearer local logo asset
+## v0.1.11 — 2026-06-27
+Hermes logo now uses the provided mark with a white circular background, and LinkedIn has a self-contained logo.
+- Updated Hermes shortcut artwork to match the supplied image with a white circular plate
+- Replaced the LinkedIn shortcut icon with an embedded local SVG
 - Bumped app version / manifest version / service worker cache
