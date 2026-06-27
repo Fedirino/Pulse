@@ -51,15 +51,29 @@
   .wx-icon{font-size:42px;line-height:1}
   .wx-expanded{display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
   .card.open .wx-expanded{display:block}
-  .wx-week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:10px}
-  .wx-day{text-align:center;background:var(--panel-2);border-radius:10px;padding:8px 4px;font-size:11px}
+  .wx-week{display:grid;grid-template-columns:repeat(10,minmax(58px,1fr));gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px}
+  .wx-day{text-align:center;background:var(--panel-2);border-radius:10px;padding:8px 4px;font-size:11px;min-width:58px}
   .wx-day .wd{color:var(--muted)}
   .wx-day .we{font-size:18px;margin:2px 0}
   .wx-day .wt{font-weight:600;font-size:12px}
   .wx-day .wn{color:var(--muted);font-size:11px}
+  .wx-alerts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .wx-alert{background:rgba(255,181,71,.12);color:#ffd28a;border:1px solid rgba(255,181,71,.28);
+    border-radius:999px;padding:6px 10px;font-size:11px;line-height:1.2}
   .wx-radar{aspect-ratio:16/10;background:#000;border-radius:12px;overflow:hidden;
     border:1px solid var(--line);margin-top:8px}
   .wx-radar iframe{width:100%;height:100%;border:0}
+  /* Crypto */
+  .crypto-list{display:flex;flex-direction:column;gap:8px}
+  .crypto-row{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--panel-2);border-radius:12px;padding:10px 12px}
+  .crypto-name{display:flex;flex-direction:column;gap:2px}
+  .crypto-name b{font-size:14px}
+  .crypto-name span{font-size:11px;color:var(--muted)}
+  .crypto-price{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-variant-numeric:tabular-nums}
+  .crypto-price b{font-size:14px}
+  .crypto-price span{font-size:11px}
+  .up{color:var(--good)}
+  .down{color:var(--bad)}
   /* Calendar */
   .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
   .cal-nav{display:flex;gap:8px}
@@ -176,10 +190,19 @@
       </div>
     </div>
     <div class="wx-expanded">
+      <div class="wx-alerts" id="wxAlerts"></div>
       <div class="wx-week" id="wxWeek"></div>
       <div class="wx-meta" style="text-align:left;font-size:12px;margin-bottom:4px">Radar</div>
       <div class="wx-radar" id="wxRadar"></div>
     </div>
+  </div>
+
+  <div class="card" id="cryptoCard">
+    <div class="card-head">
+      <div class="card-title">Crypto</div>
+      <button class="card-action" id="cryptoRefresh">Refresh</button>
+    </div>
+    <div class="crypto-list" id="cryptoList"><div class="empty">Loading crypto…</div></div>
   </div>
 
   <!-- Shortcuts -->
@@ -270,7 +293,7 @@
    Pulse — single-file SPA
    v0.1.0
    ============================================================ */
-const APP_VERSION = '0.1.5';
+const APP_VERSION = '0.1.6';
 document.getElementById('ver').textContent = APP_VERSION;
 
 /* ----- Firebase config -----
@@ -337,7 +360,7 @@ function normalizeShortcuts(){
     YouTube: 'https://cdn.simpleicons.org/youtube/FF0000',
     TikTok: 'https://cdn.simpleicons.org/tiktok/000000',
     Maps: 'https://cdn.simpleicons.org/googlemaps/4285F4',
-    Claude: 'https://cdn.simpleicons.org/anthropic/000000',
+    Claude: 'https://cdn.simpleicons.org/anthropic/5A4FCF',
     Telegram: 'https://cdn.simpleicons.org/telegram/26A5E4',
   };
   let changed = false;
@@ -475,7 +498,7 @@ async function loadWeather(){
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}`+
       `&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m`+
       `&daily=weather_code,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit`+
-      `&wind_speed_unit=mph&timezone=auto&forecast_days=7`;
+      `&wind_speed_unit=mph&timezone=auto&forecast_days=10`;
     const r = await fetch(url);
     const d = await r.json();
     const cur = d.current, day = d.daily;
@@ -485,6 +508,20 @@ async function loadWeather(){
     document.getElementById('wxLoc').textContent = loc.name || 'Local';
     document.getElementById('wxHiLo').textContent =
       `H ${Math.round(day.temperature_2m_max[0])}° / L ${Math.round(day.temperature_2m_min[0])}°`;
+    const severeCodes = new Set([65, 82, 75, 86, 95, 96, 99]);
+    const alerts = [];
+    day.time.forEach((iso, i) => {
+      const code = day.weather_code[i];
+      if (severeCodes.has(code)) {
+        const label = wxDesc(code);
+        const when = new Date(iso + 'T00:00').toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+        alerts.push(`${when}: ${label}`);
+      }
+    });
+    const alertWrap = document.getElementById('wxAlerts');
+    alertWrap.innerHTML = alerts.length
+      ? alerts.map(a => `<div class="wx-alert">${escapeHtml(a)}</div>`).join('')
+      : '<div class="wx-alert">No severe alerts in the next 10 days.</div>';
     const week = document.getElementById('wxWeek');
     week.innerHTML = day.time.map((iso,i)=>{
       const dt = new Date(iso+'T00:00');
@@ -507,6 +544,37 @@ document.getElementById('wxToggle').addEventListener('click', ()=>{
   c.classList.toggle('open');
   document.getElementById('wxToggle').textContent = c.classList.contains('open')?'Collapse':'Expand';
 });
+
+async function loadCrypto(){
+  const wrap = document.getElementById('cryptoList');
+  try {
+    const url = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1&sparkline=false&price_change_percentage=24h';
+    const r = await fetch(url, { headers: { accept: 'application/json' } });
+    const data = await r.json();
+    const stableish = /(?:usd[tce]?|dai|tusd|usde|usds|usdp|fdusd|pyusd|lusd|susd|frax|eurc|eurt|crvusd|rlusd|usdy)/i;
+    const list = data.filter(c => !stableish.test(`${c.name} ${c.symbol}`)).slice(0, 5);
+    wrap.innerHTML = list.map(c => {
+      const pct = Number(c.price_change_percentage_24h ?? 0);
+      const cls = pct >= 0 ? 'up' : 'down';
+      const sign = pct >= 0 ? '+' : '';
+      return `<div class="crypto-row">
+        <div class="crypto-name">
+          <b>${escapeHtml(c.name)} <span style="color:var(--muted)">${escapeHtml((c.symbol || '').toUpperCase())}</span></b>
+          <span>Rank #${c.market_cap_rank ?? '—'}</span>
+        </div>
+        <div class="crypto-price">
+          <b>$${Number(c.current_price).toLocaleString(undefined,{maximumFractionDigits:c.current_price < 1 ? 6 : 2})}</b>
+          <span class="${cls}">${sign}${pct.toFixed(2)}% 24h</span>
+        </div>
+      </div>`;
+    }).join('');
+    if (!list.length) wrap.innerHTML = '<div class="empty">No non-stable coins found.</div>';
+  } catch(e) {
+    wrap.innerHTML = '<div class="empty">Crypto unavailable.</div>';
+    console.warn(e);
+  }
+}
+
 document.getElementById('wxLoc').addEventListener('click', async ()=>{
   const q = prompt('City / place name (or "auto" to use device location):');
   if (!q) return;
@@ -956,6 +1024,7 @@ function renderAll(){
 }
 renderAll();
 loadWeather();
+loadCrypto();
 soundSel.value = state.timer.soundId;
 if ('Notification' in window && Notification.permission === 'default'){
   // Ask politely after first interaction
@@ -966,6 +1035,7 @@ if ('serviceWorker' in navigator){
   navigator.serviceWorker.register('/service-worker.js').catch(()=>{});
 }
 setInterval(renderGreet, 60000);
+document.getElementById('cryptoRefresh').addEventListener('click', loadCrypto);
 </script>
 </body>
 </html>
