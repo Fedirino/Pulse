@@ -11,19 +11,48 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - uses: actions/setup-node@v4
         with:
           node-version: 24
 
+      - name: Detect deploy-relevant changes
+        id: changes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if git rev-parse HEAD^ >/dev/null 2>&1; then
+            changed_files="$(git diff --name-only HEAD^ HEAD)"
+          else
+            changed_files="$(git show --name-only --pretty='' HEAD)"
+          fi
+
+          printf 'changed_files<<EOF\n%s\nEOF\n' "$changed_files" >> "$GITHUB_OUTPUT"
+
+          if printf '%s\n' "$changed_files" | grep -Eq '^(index\.html|manifest\.json|service-worker\.js|firebase\.json|[^/]+\.(png|jpg|jpeg|gif|svg|webp|ico|css|js|json))$|^assets/'; then
+            echo 'deploy=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'deploy=false' >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install Firebase CLI
+        if: steps.changes.outputs.deploy == 'true'
         run: npm install -g firebase-tools
 
       - name: Write Firebase service account
+        if: steps.changes.outputs.deploy == 'true'
         shell: bash
         run: |
           printf '%s' '${{ secrets.FIREBASE_SERVICE_ACCOUNT_OSPULSEPORT }}' > "$RUNNER_TEMP/firebase-service-account.json"
           echo "GOOGLE_APPLICATION_CREDENTIALS=$RUNNER_TEMP/firebase-service-account.json" >> "$GITHUB_ENV"
 
       - name: Deploy hosting
+        if: steps.changes.outputs.deploy == 'true'
         run: firebase deploy --only hosting --project ospulseport
+
+      - name: Skip deploy when hosting files did not change
+        if: steps.changes.outputs.deploy != 'true'
+        run: echo "No deploy-relevant files changed; skipping Firebase release."
