@@ -1,0 +1,936 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0e1a" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>Pulse</title>
+<link rel="manifest" href="/manifest.json" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0e1a'/%3E%3Cpath d='M8 32 L20 32 L26 18 L34 46 L40 32 L56 32' stroke='%2300d4ff' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<style>
+  :root{
+    --bg:#0a0e1a; --panel:#11172a; --panel-2:#162038; --line:#1f2a44;
+    --text:#e7ecf5; --muted:#8a93a8; --accent:#00d4ff; --accent-2:#5b8cff;
+    --warn:#ffb547; --bad:#ff5c7a; --good:#3ddc97;
+    --radius:18px; --pad:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
+    overscroll-behavior-y:contain;-webkit-tap-highlight-color:transparent;}
+  body{padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(72px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
+    max-width:520px;margin:0 auto;}
+  h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.01em}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+  input,textarea,select{font:inherit;color:inherit;background:var(--panel-2);
+    border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;outline:none}
+  input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+  /* Header */
+  .topbar{display:flex;align-items:center;justify-content:space-between;
+    padding:18px 16px 8px;}
+  .greet{font-size:22px;font-weight:600}
+  .greet small{display:block;color:var(--muted);font-weight:400;font-size:13px;margin-top:2px}
+  .auth-btn{padding:8px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);
+    font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .auth-btn .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+  .auth-btn.online .dot{background:var(--good)}
+  /* Cards */
+  .stack{display:flex;flex-direction:column;gap:12px;padding:6px 12px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    padding:var(--pad);position:relative;overflow:hidden}
+  .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .card-title{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+  .card-action{font-size:13px;color:var(--accent)}
+  /* Weather */
+  .wx-compact{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .wx-temp{font-size:46px;font-weight:300;letter-spacing:-.02em;line-height:1}
+  .wx-meta{text-align:right;color:var(--muted);font-size:13px}
+  .wx-meta b{display:block;color:var(--text);font-size:15px;margin-bottom:2px}
+  .wx-icon{font-size:42px;line-height:1}
+  .wx-expanded{display:none;margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+  .card.open .wx-expanded{display:block}
+  .wx-week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:10px}
+  .wx-day{text-align:center;background:var(--panel-2);border-radius:10px;padding:8px 4px;font-size:11px}
+  .wx-day .wd{color:var(--muted)}
+  .wx-day .we{font-size:18px;margin:2px 0}
+  .wx-day .wt{font-weight:600;font-size:12px}
+  .wx-day .wn{color:var(--muted);font-size:11px}
+  .wx-radar{aspect-ratio:16/10;background:#000;border-radius:12px;overflow:hidden;
+    border:1px solid var(--line);margin-top:8px}
+  .wx-radar iframe{width:100%;height:100%;border:0}
+  /* Calendar */
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .cal-nav{display:flex;gap:8px}
+  .cal-nav button{width:28px;height:28px;border-radius:8px;background:var(--panel-2);color:var(--muted)}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;font-size:12px}
+  .cal-dow{color:var(--muted);text-align:center;padding:4px 0;font-size:11px}
+  .cal-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;
+    background:transparent;color:var(--text);position:relative;cursor:pointer}
+  .cal-cell.dim{color:#3a4360}
+  .cal-cell.today{background:var(--accent);color:#001520;font-weight:600}
+  .cal-cell.has-event::after{content:"";position:absolute;bottom:4px;width:4px;height:4px;
+    border-radius:50%;background:var(--accent-2)}
+  .cal-cell.today.has-event::after{background:#001520}
+  .cal-events{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+  .cal-event{display:flex;justify-content:space-between;gap:8px;background:var(--panel-2);
+    padding:8px 10px;border-radius:10px;font-size:13px}
+  .cal-event .when{color:var(--muted);font-size:12px}
+  /* Notes */
+  .notes-list{display:flex;flex-direction:column;gap:8px}
+  .note{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+  .note textarea{background:transparent;border:0;padding:0;resize:none;width:100%;
+    min-height:48px;font-size:14px;line-height:1.4}
+  .note-foot{display:flex;justify-content:space-between;align-items:center;margin-top:6px;
+    font-size:11px;color:var(--muted)}
+  .note-del{color:var(--bad);font-size:12px}
+  .add-row{display:flex;gap:8px;margin-top:10px}
+  .add-row button{padding:10px 14px;border-radius:10px;background:var(--accent);color:#001520;
+    font-weight:600;font-size:14px}
+  /* Alarms */
+  .tabs{display:flex;gap:4px;background:var(--panel-2);padding:4px;border-radius:10px;margin-bottom:10px}
+  .tabs button{flex:1;padding:8px;border-radius:8px;font-size:13px;color:var(--muted)}
+  .tabs button.active{background:var(--panel);color:var(--text)}
+  .alarm-list{display:flex;flex-direction:column;gap:8px}
+  .alarm{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--panel-2);border-radius:12px;padding:10px 12px}
+  .alarm .time{font-size:22px;font-weight:300}
+  .alarm .label{color:var(--muted);font-size:12px}
+  .alarm.off .time{color:var(--muted)}
+  .switch{width:38px;height:22px;background:var(--line);border-radius:999px;position:relative;
+    transition:background .15s;flex-shrink:0}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
+    background:#fff;transition:transform .15s}
+  .switch.on{background:var(--accent)}
+  .switch.on::after{transform:translateX(16px)}
+  .timer-display{font-size:54px;font-weight:200;text-align:center;letter-spacing:-.03em;
+    font-variant-numeric:tabular-nums;margin:6px 0 12px}
+  .timer-controls{display:flex;gap:8px;justify-content:center}
+  .timer-controls button{padding:10px 18px;border-radius:10px;background:var(--panel-2);
+    border:1px solid var(--line);font-size:14px}
+  .timer-controls button.primary{background:var(--accent);color:#001520;border-color:var(--accent);font-weight:600}
+  .timer-presets{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+  .timer-presets button{padding:8px;border-radius:8px;background:var(--panel-2);font-size:12px;color:var(--muted)}
+  /* Shortcuts */
+  .shortcuts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .sc{aspect-ratio:1;background:var(--panel-2);border:1px solid var(--line);border-radius:14px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    text-decoration:none;color:var(--text);font-size:11px;text-align:center;padding:6px}
+  .sc .icon{font-size:26px}
+  .sc.add{color:var(--muted);border-style:dashed}
+  /* Modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:50;
+    align-items:flex-end;justify-content:center;padding:16px}
+  .modal-bg.open{display:flex}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+    width:100%;max-width:480px;padding:18px;max-height:85vh;overflow:auto}
+  .modal h3{margin-bottom:12px;font-size:17px}
+  .modal-row{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+  .modal-row label{font-size:12px;color:var(--muted)}
+  .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+  .modal-actions button{padding:10px 16px;border-radius:10px;background:var(--panel-2);border:1px solid var(--line)}
+  .modal-actions button.primary{background:var(--accent);color:#001520;border-color:var(--accent);font-weight:600}
+  /* Bottom nav */
+  .nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,14,26,.92);
+    backdrop-filter:blur(10px);border-top:1px solid var(--line);
+    display:flex;justify-content:space-around;padding:8px 8px calc(8px + env(safe-area-inset-bottom));
+    z-index:40}
+  .nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+    padding:6px;color:var(--muted);font-size:10px}
+  .nav button.active{color:var(--accent)}
+  .nav .ic{font-size:20px}
+  /* Sections */
+  .section{display:none}
+  .section.active{display:block}
+  .empty{color:var(--muted);text-align:center;padding:18px 8px;font-size:13px}
+  .version{text-align:center;color:#3a4360;font-size:11px;padding:14px 0 4px}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="greet" id="greet">Hello<small id="greetSub">Loading…</small></div>
+  <button class="auth-btn" id="authBtn"><span class="dot"></span><span id="authLabel">Local</span></button>
+</header>
+
+<!-- HOME -->
+<main class="section active stack" id="sec-home">
+
+  <!-- Weather -->
+  <div class="card" id="wxCard">
+    <div class="card-head">
+      <div class="card-title">Weather</div>
+      <button class="card-action" id="wxToggle">Expand</button>
+    </div>
+    <div class="wx-compact">
+      <div>
+        <div class="wx-temp" id="wxTemp">—°</div>
+        <div class="wx-meta" style="text-align:left"><span id="wxDesc">—</span></div>
+      </div>
+      <div class="wx-icon" id="wxIcon">⛅</div>
+      <div class="wx-meta">
+        <b id="wxLoc">—</b>
+        <span id="wxHiLo">H — / L —</span>
+      </div>
+    </div>
+    <div class="wx-expanded">
+      <div class="wx-week" id="wxWeek"></div>
+      <div class="wx-meta" style="text-align:left;font-size:12px;margin-bottom:4px">Radar</div>
+      <div class="wx-radar" id="wxRadar"></div>
+    </div>
+  </div>
+
+  <!-- Calendar -->
+  <div class="card" id="calCard">
+    <div class="cal-head">
+      <div>
+        <div class="card-title">Calendar</div>
+        <h3 id="calMonth" style="margin-top:4px;font-size:16px">—</h3>
+      </div>
+      <div class="cal-nav">
+        <button id="calPrev">‹</button>
+        <button id="calToday">•</button>
+        <button id="calNext">›</button>
+      </div>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+    <div class="cal-events" id="calEvents"></div>
+    <div class="add-row">
+      <button id="addEventBtn">+ Add event</button>
+    </div>
+  </div>
+
+  <!-- Shortcuts -->
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Shortcuts</div>
+      <button class="card-action" id="editShortcuts">Edit</button>
+    </div>
+    <div class="shortcuts" id="shortcuts"></div>
+  </div>
+
+  <div class="version">Pulse v<span id="ver">0.1.0</span> · <span id="syncStatus">local</span></div>
+</main>
+
+<!-- NOTES -->
+<main class="section stack" id="sec-notes">
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Quick Notes</div>
+      <button class="card-action" id="newNote">+ New</button>
+    </div>
+    <div class="notes-list" id="notesList"></div>
+  </div>
+</main>
+
+<!-- TIMERS -->
+<main class="section stack" id="sec-timers">
+  <div class="card">
+    <div class="tabs">
+      <button data-tab="alarm" class="active">Alarms</button>
+      <button data-tab="timer">Timer</button>
+      <button data-tab="remind">Reminders</button>
+    </div>
+
+    <div class="tab-pane" data-pane="alarm">
+      <div class="alarm-list" id="alarmsList"></div>
+      <div class="add-row"><button id="addAlarmBtn">+ New alarm</button></div>
+    </div>
+
+    <div class="tab-pane" data-pane="timer" style="display:none">
+      <div class="timer-display" id="timerDisp">00:00</div>
+      <div class="timer-controls">
+        <button id="timerStart" class="primary">Start</button>
+        <button id="timerReset">Reset</button>
+      </div>
+      <div class="timer-presets">
+        <button data-sec="60">1m</button>
+        <button data-sec="300">5m</button>
+        <button data-sec="600">10m</button>
+        <button data-sec="1500">25m</button>
+        <button data-sec="1800">30m</button>
+        <button data-sec="2700">45m</button>
+        <button data-sec="3600">1h</button>
+        <button data-sec="custom">Custom</button>
+      </div>
+      <div class="modal-row" style="margin-top:14px">
+        <label>Sound</label>
+        <select id="timerSound"></select>
+      </div>
+    </div>
+
+    <div class="tab-pane" data-pane="remind" style="display:none">
+      <div class="alarm-list" id="remindList"></div>
+      <div class="add-row"><button id="addRemindBtn">+ New reminder</button></div>
+    </div>
+  </div>
+</main>
+
+<!-- Bottom nav -->
+<nav class="nav">
+  <button data-sec="home" class="active"><span class="ic">🏠</span>Home</button>
+  <button data-sec="notes"><span class="ic">📝</span>Notes</button>
+  <button data-sec="timers"><span class="ic">⏰</span>Timers</button>
+</nav>
+
+<!-- Modal -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" id="modal"></div>
+</div>
+
+<!-- Firebase (compat builds — no bundler needed) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+
+<script>
+/* ============================================================
+   Pulse — single-file SPA
+   v0.1.0
+   ============================================================ */
+const APP_VERSION = '0.1.0';
+document.getElementById('ver').textContent = APP_VERSION;
+
+/* ----- Firebase config -----
+   Replace the placeholder values below with your actual web app
+   config from Firebase Console → Project Settings → General →
+   "Your apps" → Web (</>). The app works LOCAL-ONLY until then. */
+const firebaseConfig = {
+  apiKey: "AIzaSyDf-b3wQBsKw2tsBkenupz7b6hRrI5b-iU",
+  authDomain: "ospulseport.firebaseapp.com",
+  projectId: "ospulseport",
+  storageBucket: "ospulseport.firebasestorage.app",
+  messagingSenderId: "123244377813",
+  appId: "1:123244377813:web:369ddda768df833c03545c",
+  measurementId: "G-TTFG7CFHQX"
+};
+
+let fbApp=null, auth=null, db=null, user=null, online=false;
+const hasConfig = !firebaseConfig.apiKey.startsWith('REPLACE_ME');
+
+if (hasConfig) {
+  try {
+    fbApp = firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth();
+    db = firebase.firestore();
+    auth.onAuthStateChanged(u => {
+      user = u;
+      online = !!u && !u.isAnonymous;
+      renderAuth();
+      if (u) hydrateFromCloud();
+    });
+    auth.signInAnonymously().catch(e => console.warn('anon auth failed', e));
+  } catch(e){ console.warn('Firebase init failed', e); }
+}
+
+/* ----- Local store (the source of truth, cloud syncs to it) ----- */
+const LS = {
+  get(k, d){ try{ return JSON.parse(localStorage.getItem('pulse:'+k)) ?? d; }catch{ return d; } },
+  set(k, v){ localStorage.setItem('pulse:'+k, JSON.stringify(v)); },
+};
+
+const state = {
+  notes:    LS.get('notes', []),
+  events:   LS.get('events', []),
+  alarms:   LS.get('alarms', []),
+  reminders:LS.get('reminders', []),
+  shortcuts:LS.get('shortcuts', [
+    { icon:'📧', label:'Mail',    url:'https://mail.google.com' },
+    { icon:'📅', label:'Calendar',url:'https://calendar.google.com' },
+    { icon:'🎵', label:'Music',   url:'https://music.youtube.com' },
+    { icon:'🗺️', label:'Maps',    url:'https://maps.google.com' },
+  ]),
+  loc:      LS.get('loc', null), // {lat, lon, name}
+  timer:    { remaining:0, running:false, total:0, soundId:'beep' },
+  calCursor: new Date(),
+};
+
+function persist(key){ LS.set(key, state[key]); syncUp(key); }
+
+/* ----- Cloud sync (per-user docs) ----- */
+async function hydrateFromCloud(){
+  if(!db || !user) return;
+  const uid = user.uid;
+  try {
+    const doc = await db.collection('users').doc(uid).get();
+    if (doc.exists){
+      const d = doc.data();
+      ['notes','events','alarms','reminders','shortcuts'].forEach(k=>{
+        if(Array.isArray(d[k])) { state[k] = d[k]; LS.set(k, d[k]); }
+      });
+      renderAll();
+      document.getElementById('syncStatus').textContent = online ? 'synced' : 'anon-cloud';
+    }
+  } catch(e){ console.warn('hydrate failed', e); }
+}
+let syncTimer=null;
+function syncUp(key){
+  if(!db || !user) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(async ()=>{
+    try{
+      await db.collection('users').doc(user.uid).set({
+        [key]: state[key], updatedAt: Date.now()
+      }, {merge:true});
+      document.getElementById('syncStatus').textContent = online ? 'synced' : 'anon-cloud';
+    }catch(e){ console.warn('sync failed', e); }
+  }, 600);
+}
+
+/* ----- Greeting + Auth UI ----- */
+function renderAuth(){
+  const btn = document.getElementById('authBtn');
+  const lbl = document.getElementById('authLabel');
+  if (online){ btn.classList.add('online'); lbl.textContent = user.displayName?.split(' ')[0] || 'Synced'; }
+  else { btn.classList.remove('online'); lbl.textContent = hasConfig ? 'Sign in' : 'Local'; }
+  document.getElementById('syncStatus').textContent = online ? 'synced' : (hasConfig ? 'anon-cloud' : 'local');
+}
+function renderGreet(){
+  const h = new Date().getHours();
+  const t = h<5?'Late night':h<12?'Good morning':h<17?'Good afternoon':h<21?'Good evening':'Good night';
+  document.getElementById('greet').firstChild.nodeValue = t;
+  const d = new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+  document.getElementById('greetSub').textContent = d;
+}
+document.getElementById('authBtn').addEventListener('click', async () => {
+  if (!hasConfig) { alert('Add your Firebase web config in index.html to enable sign-in / sync.'); return; }
+  if (online) {
+    if (confirm('Sign out?')) { await auth.signOut(); await auth.signInAnonymously(); }
+  } else {
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      await auth.signInWithPopup(provider);
+    } catch(e){ alert('Sign-in failed: '+e.message); }
+  }
+});
+
+/* ============================================================
+   WEATHER (Open-Meteo, no key) + RainViewer radar
+   ============================================================ */
+const WX_CODES = {
+  0:['Clear','☀️'], 1:['Mainly clear','🌤️'], 2:['Partly cloudy','⛅'], 3:['Overcast','☁️'],
+  45:['Fog','🌫️'], 48:['Rime fog','🌫️'],
+  51:['Drizzle','🌦️'], 53:['Drizzle','🌦️'], 55:['Drizzle','🌦️'],
+  61:['Rain','🌧️'], 63:['Rain','🌧️'], 65:['Heavy rain','🌧️'],
+  71:['Snow','🌨️'], 73:['Snow','🌨️'], 75:['Heavy snow','❄️'],
+  77:['Snow grains','🌨️'],
+  80:['Showers','🌦️'], 81:['Showers','🌦️'], 82:['Heavy showers','⛈️'],
+  85:['Snow showers','🌨️'], 86:['Snow showers','❄️'],
+  95:['Thunderstorm','⛈️'], 96:['Thunderstorm','⛈️'], 99:['Thunderstorm','⛈️'],
+};
+function wxDesc(c){ return (WX_CODES[c]||['—','❓'])[0]; }
+function wxIcon(c){ return (WX_CODES[c]||['—','❓'])[1]; }
+
+async function loadWeather(){
+  let loc = state.loc;
+  if (!loc) {
+    loc = await new Promise(res=>{
+      if (!navigator.geolocation) return res(null);
+      navigator.geolocation.getCurrentPosition(
+        p=>res({lat:p.coords.latitude, lon:p.coords.longitude, name:'Current location'}),
+        ()=>res(null),
+        {timeout:6000, maximumAge:600000}
+      );
+    });
+    if (loc){ state.loc = loc; LS.set('loc', loc); }
+  }
+  if (!loc){
+    document.getElementById('wxLoc').textContent = 'Tap to set location';
+    document.getElementById('wxDesc').textContent = 'Location unavailable';
+    return;
+  }
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}`+
+      `&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m`+
+      `&daily=weather_code,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit`+
+      `&wind_speed_unit=mph&timezone=auto&forecast_days=7`;
+    const r = await fetch(url);
+    const d = await r.json();
+    const cur = d.current, day = d.daily;
+    document.getElementById('wxTemp').textContent = Math.round(cur.temperature_2m)+'°';
+    document.getElementById('wxDesc').textContent = wxDesc(cur.weather_code);
+    document.getElementById('wxIcon').textContent = wxIcon(cur.weather_code);
+    document.getElementById('wxLoc').textContent = loc.name || 'Local';
+    document.getElementById('wxHiLo').textContent =
+      `H ${Math.round(day.temperature_2m_max[0])}° / L ${Math.round(day.temperature_2m_min[0])}°`;
+    const week = document.getElementById('wxWeek');
+    week.innerHTML = day.time.map((iso,i)=>{
+      const dt = new Date(iso+'T00:00');
+      const wd = i===0 ? 'Today' : dt.toLocaleDateString(undefined,{weekday:'short'});
+      return `<div class="wx-day"><div class="wd">${wd}</div>
+        <div class="we">${wxIcon(day.weather_code[i])}</div>
+        <div class="wt">${Math.round(day.temperature_2m_max[i])}°</div>
+        <div class="wn">${Math.round(day.temperature_2m_min[i])}°</div></div>`;
+    }).join('');
+    // Radar (RainViewer embed, no key)
+    document.getElementById('wxRadar').innerHTML =
+      `<iframe loading="lazy" src="https://embed.windy.com/embed2.html?lat=${loc.lat}&lon=${loc.lon}&zoom=7&level=surface&overlay=radar&menu=&message=true&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&detailLat=${loc.lat}&detailLon=${loc.lon}&metricWind=mph&metricTemp=%C2%B0F&radarRange=-1"></iframe>`;
+  } catch(e){
+    document.getElementById('wxDesc').textContent = 'Weather unavailable';
+    console.warn(e);
+  }
+}
+document.getElementById('wxToggle').addEventListener('click', ()=>{
+  const c = document.getElementById('wxCard');
+  c.classList.toggle('open');
+  document.getElementById('wxToggle').textContent = c.classList.contains('open')?'Collapse':'Expand';
+});
+document.getElementById('wxLoc').addEventListener('click', async ()=>{
+  const q = prompt('City / place name (or "auto" to use device location):');
+  if (!q) return;
+  if (q.trim().toLowerCase()==='auto'){ state.loc = null; LS.set('loc', null); return loadWeather(); }
+  try {
+    const r = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1`);
+    const d = await r.json();
+    if (!d.results?.[0]) return alert('Not found');
+    const p = d.results[0];
+    state.loc = { lat:p.latitude, lon:p.longitude, name:`${p.name}${p.admin1?', '+p.admin1:''}` };
+    LS.set('loc', state.loc);
+    loadWeather();
+  } catch{ alert('Lookup failed'); }
+});
+
+/* ============================================================
+   CALENDAR
+   ============================================================ */
+function renderCalendar(){
+  const cur = state.calCursor;
+  const year = cur.getFullYear(), month = cur.getMonth();
+  const first = new Date(year, month, 1);
+  const startDow = first.getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const daysInPrev = new Date(year, month, 0).getDate();
+  document.getElementById('calMonth').textContent =
+    cur.toLocaleDateString(undefined,{month:'long', year:'numeric'});
+  const today = new Date(); today.setHours(0,0,0,0);
+  const grid = document.getElementById('calGrid');
+  const dows = ['S','M','T','W','T','F','S'];
+  let html = dows.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  // leading dim
+  for (let i=startDow-1; i>=0; i--){
+    html += `<div class="cal-cell dim">${daysInPrev-i}</div>`;
+  }
+  for (let d=1; d<=daysInMonth; d++){
+    const dt = new Date(year, month, d);
+    const iso = dt.toISOString().slice(0,10);
+    const hasEv = state.events.some(e=>e.date===iso);
+    const isToday = dt.getTime()===today.getTime();
+    html += `<div class="cal-cell${isToday?' today':''}${hasEv?' has-event':''}" data-date="${iso}">${d}</div>`;
+  }
+  // trailing dim
+  const cellsSoFar = startDow + daysInMonth;
+  const trail = (7 - (cellsSoFar % 7)) % 7;
+  for (let i=1; i<=trail; i++) html += `<div class="cal-cell dim">${i}</div>`;
+  grid.innerHTML = html;
+  grid.querySelectorAll('.cal-cell[data-date]').forEach(c=>{
+    c.addEventListener('click', ()=> showEventsForDate(c.dataset.date));
+  });
+  // Today's events preview
+  const todayIso = today.toISOString().slice(0,10);
+  showEventsForDate(todayIso);
+}
+function showEventsForDate(iso){
+  const list = state.events.filter(e=>e.date===iso).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+  const wrap = document.getElementById('calEvents');
+  if (!list.length){
+    wrap.innerHTML = `<div class="empty">No events ${iso===new Date().toISOString().slice(0,10)?'today':'on '+iso}</div>`;
+    return;
+  }
+  wrap.innerHTML = list.map(e=>`
+    <div class="cal-event">
+      <div><b>${escapeHtml(e.title)}</b><div class="when">${e.time||'All day'}${e.notify?' · 🔔':''}</div></div>
+      <button class="note-del" data-del-ev="${e.id}">×</button>
+    </div>`).join('');
+  wrap.querySelectorAll('[data-del-ev]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      state.events = state.events.filter(x=>x.id!==b.dataset.delEv);
+      persist('events'); renderCalendar();
+    });
+  });
+}
+document.getElementById('calPrev').addEventListener('click', ()=>{
+  state.calCursor = new Date(state.calCursor.getFullYear(), state.calCursor.getMonth()-1, 1);
+  renderCalendar();
+});
+document.getElementById('calNext').addEventListener('click', ()=>{
+  state.calCursor = new Date(state.calCursor.getFullYear(), state.calCursor.getMonth()+1, 1);
+  renderCalendar();
+});
+document.getElementById('calToday').addEventListener('click', ()=>{
+  state.calCursor = new Date(); renderCalendar();
+});
+document.getElementById('addEventBtn').addEventListener('click', ()=>{
+  openModal(`
+    <h3>New event</h3>
+    <div class="modal-row"><label>Title</label><input id="evTitle" placeholder="Dentist"></div>
+    <div class="modal-row"><label>Date</label><input id="evDate" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+    <div class="modal-row"><label>Time (optional)</label><input id="evTime" type="time"></div>
+    <div class="modal-row"><label><input id="evNotify" type="checkbox"> Remind me at event time</label></div>
+    <div class="modal-actions">
+      <button data-close>Cancel</button>
+      <button class="primary" id="evSave">Save</button>
+    </div>`);
+  document.getElementById('evSave').addEventListener('click', ()=>{
+    const title = document.getElementById('evTitle').value.trim();
+    if (!title) return;
+    state.events.push({
+      id: uid(), title,
+      date: document.getElementById('evDate').value,
+      time: document.getElementById('evTime').value,
+      notify: document.getElementById('evNotify').checked,
+    });
+    persist('events'); closeModal(); renderCalendar();
+  });
+});
+
+/* ============================================================
+   NOTES
+   ============================================================ */
+function renderNotes(){
+  const list = document.getElementById('notesList');
+  if (!state.notes.length){
+    list.innerHTML = `<div class="empty">No notes yet. Tap + New.</div>`; return;
+  }
+  list.innerHTML = state.notes.slice().sort((a,b)=>b.updated-a.updated).map(n=>`
+    <div class="note" data-id="${n.id}">
+      <textarea data-note="${n.id}" placeholder="Note…">${escapeHtml(n.text)}</textarea>
+      <div class="note-foot">
+        <span>${new Date(n.updated).toLocaleString()}</span>
+        <button class="note-del" data-del="${n.id}">Delete</button>
+      </div>
+    </div>`).join('');
+  list.querySelectorAll('textarea[data-note]').forEach(t=>{
+    autoGrow(t);
+    t.addEventListener('input', debounce(()=>{
+      const n = state.notes.find(x=>x.id===t.dataset.note);
+      if (!n) return;
+      n.text = t.value; n.updated = Date.now();
+      persist('notes');
+      autoGrow(t);
+    }, 300));
+  });
+  list.querySelectorAll('[data-del]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      state.notes = state.notes.filter(x=>x.id!==b.dataset.del);
+      persist('notes'); renderNotes();
+    });
+  });
+}
+document.getElementById('newNote').addEventListener('click', ()=>{
+  state.notes.unshift({ id: uid(), text:'', updated: Date.now() });
+  persist('notes'); renderNotes();
+  setTimeout(()=>{ const t = document.querySelector('textarea[data-note]'); t && t.focus(); }, 50);
+});
+
+/* ============================================================
+   ALARMS · TIMER · REMINDERS
+   ============================================================ */
+// Tabs
+document.querySelectorAll('.tabs button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.querySelectorAll('.tab-pane').forEach(p=>p.style.display='none');
+    document.querySelector(`.tab-pane[data-pane="${b.dataset.tab}"]`).style.display='block';
+  });
+});
+
+const SOUNDS = [
+  { id:'beep',   name:'Beep',          play:()=>tone(880, .4) },
+  { id:'chime',  name:'Chime',         play:()=>chord([523,659,784], .6) },
+  { id:'gentle', name:'Gentle bells',  play:()=>arp([659,784,988,1175], .12) },
+  { id:'urgent', name:'Urgent',        play:()=>pulse(1100, .15, 6) },
+  { id:'silent', name:'Silent (vibrate only)', play:()=>{} },
+];
+const soundSel = document.getElementById('timerSound');
+soundSel.innerHTML = SOUNDS.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+soundSel.addEventListener('change', ()=>{ state.timer.soundId = soundSel.value; SOUNDS.find(s=>s.id===soundSel.value).play(); });
+
+let actx=null;
+function ac(){ actx = actx || new (window.AudioContext||window.webkitAudioContext)(); return actx; }
+function tone(f, dur){
+  const a = ac(); const o = a.createOscillator(); const g = a.createGain();
+  o.connect(g); g.connect(a.destination); o.frequency.value = f; o.type='sine';
+  g.gain.setValueAtTime(0, a.currentTime);
+  g.gain.linearRampToValueAtTime(.3, a.currentTime+.02);
+  g.gain.exponentialRampToValueAtTime(.0001, a.currentTime+dur);
+  o.start(); o.stop(a.currentTime+dur+.05);
+}
+function chord(freqs, dur){ freqs.forEach(f=>tone(f, dur)); }
+function arp(freqs, step){ freqs.forEach((f,i)=> setTimeout(()=>tone(f,.3), i*step*1000)); }
+function pulse(f, dur, n){ for(let i=0;i<n;i++) setTimeout(()=>tone(f,dur), i*(dur*1000+80)); }
+function vibrate(p){ if (navigator.vibrate) navigator.vibrate(p); }
+function fire(soundId){
+  const s = SOUNDS.find(x=>x.id===soundId) || SOUNDS[0];
+  s.play(); vibrate([200,100,200,100,400]);
+}
+
+// Alarms
+function renderAlarms(){
+  const list = document.getElementById('alarmsList');
+  if (!state.alarms.length){ list.innerHTML = `<div class="empty">No alarms set.</div>`; return; }
+  list.innerHTML = state.alarms.slice().sort((a,b)=>a.time.localeCompare(b.time)).map(a=>`
+    <div class="alarm${a.enabled?'':' off'}" data-id="${a.id}">
+      <div>
+        <div class="time">${fmt12(a.time)}</div>
+        <div class="label">${escapeHtml(a.label||'Alarm')} · ${SOUNDS.find(s=>s.id===a.sound)?.name||'Beep'}</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="note-del" data-del-al="${a.id}">×</button>
+        <div class="switch${a.enabled?' on':''}" data-toggle="${a.id}"></div>
+      </div>
+    </div>`).join('');
+  list.querySelectorAll('[data-toggle]').forEach(s=>{
+    s.addEventListener('click', ()=>{
+      const a = state.alarms.find(x=>x.id===s.dataset.toggle); a.enabled = !a.enabled;
+      persist('alarms'); renderAlarms();
+    });
+  });
+  list.querySelectorAll('[data-del-al]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      state.alarms = state.alarms.filter(x=>x.id!==b.dataset.delAl);
+      persist('alarms'); renderAlarms();
+    });
+  });
+}
+document.getElementById('addAlarmBtn').addEventListener('click', ()=>{
+  openModal(`
+    <h3>New alarm</h3>
+    <div class="modal-row"><label>Time</label><input id="alTime" type="time" value="07:00"></div>
+    <div class="modal-row"><label>Label</label><input id="alLabel" placeholder="Wake up"></div>
+    <div class="modal-row"><label>Sound</label>
+      <select id="alSound">${SOUNDS.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select></div>
+    <div class="modal-actions">
+      <button data-close>Cancel</button>
+      <button class="primary" id="alSave">Save</button>
+    </div>`);
+  document.getElementById('alSave').addEventListener('click', ()=>{
+    state.alarms.push({
+      id: uid(), time: document.getElementById('alTime').value,
+      label: document.getElementById('alLabel').value || 'Alarm',
+      sound: document.getElementById('alSound').value, enabled:true,
+    });
+    persist('alarms'); closeModal(); renderAlarms();
+  });
+});
+
+// Reminders
+function renderReminders(){
+  const list = document.getElementById('remindList');
+  if (!state.reminders.length){ list.innerHTML = `<div class="empty">No reminders.</div>`; return; }
+  const now = Date.now();
+  list.innerHTML = state.reminders.slice().sort((a,b)=>a.at-b.at).map(r=>{
+    const overdue = r.at < now && !r.done;
+    return `<div class="alarm${r.done?' off':''}" data-id="${r.id}">
+      <div>
+        <div class="time" style="font-size:16px">${escapeHtml(r.text)}</div>
+        <div class="label" style="color:${overdue?'var(--bad)':'var(--muted)'}">${new Date(r.at).toLocaleString()}${overdue?' · overdue':''}</div>
+      </div>
+      <button class="note-del" data-del-rm="${r.id}">×</button>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('[data-del-rm]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      state.reminders = state.reminders.filter(x=>x.id!==b.dataset.delRm);
+      persist('reminders'); renderReminders();
+    });
+  });
+}
+document.getElementById('addRemindBtn').addEventListener('click', ()=>{
+  const nowL = new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+  openModal(`
+    <h3>New reminder</h3>
+    <div class="modal-row"><label>What</label><input id="rmText" placeholder="Take meds"></div>
+    <div class="modal-row"><label>When</label><input id="rmAt" type="datetime-local" value="${nowL}"></div>
+    <div class="modal-actions">
+      <button data-close>Cancel</button>
+      <button class="primary" id="rmSave">Save</button>
+    </div>`);
+  document.getElementById('rmSave').addEventListener('click', ()=>{
+    const text = document.getElementById('rmText').value.trim();
+    const at = new Date(document.getElementById('rmAt').value).getTime();
+    if (!text || !at) return;
+    state.reminders.push({ id:uid(), text, at, done:false });
+    persist('reminders'); closeModal(); renderReminders();
+  });
+});
+
+// Alarm/reminder tick (every 20s)
+let lastTickMin = '';
+setInterval(()=>{
+  const now = new Date();
+  const hhmm = now.toTimeString().slice(0,5);
+  if (hhmm !== lastTickMin){
+    lastTickMin = hhmm;
+    state.alarms.filter(a=>a.enabled && a.time===hhmm).forEach(a=>{
+      fire(a.sound); notify(a.label || 'Alarm', `It's ${fmt12(a.time)}`);
+    });
+  }
+  const t = now.getTime();
+  state.reminders.filter(r=>!r.done && r.at<=t && r.at>t-60000).forEach(r=>{
+    r.done = true; persist('reminders'); renderReminders();
+    fire('chime'); notify('Reminder', r.text);
+  });
+  // Event notifications
+  state.events.filter(e=>e.notify && !e._fired && e.time).forEach(e=>{
+    const evDt = new Date(`${e.date}T${e.time}`).getTime();
+    if (evDt <= t && evDt > t-60000){
+      e._fired = true; persist('events');
+      fire('gentle'); notify('Event', `${e.title} — now`);
+    }
+  });
+}, 20000);
+
+function notify(title, body){
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted'){
+    new Notification(title, { body, icon:'/icon-192.png' });
+  }
+}
+
+// Timer
+let timerTick = null;
+function renderTimer(){
+  const r = state.timer.remaining;
+  const m = Math.floor(r/60), s = r%60;
+  document.getElementById('timerDisp').textContent =
+    `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function timerStart(){
+  if (state.timer.remaining<=0) return;
+  state.timer.running = true;
+  document.getElementById('timerStart').textContent = 'Pause';
+  timerTick = setInterval(()=>{
+    state.timer.remaining--;
+    renderTimer();
+    if (state.timer.remaining<=0){
+      clearInterval(timerTick); timerTick=null; state.timer.running=false;
+      document.getElementById('timerStart').textContent = 'Start';
+      fire(state.timer.soundId); notify('Timer done', `${Math.round(state.timer.total/60)}m timer finished`);
+    }
+  }, 1000);
+}
+function timerPause(){
+  clearInterval(timerTick); timerTick=null; state.timer.running=false;
+  document.getElementById('timerStart').textContent = 'Start';
+}
+document.getElementById('timerStart').addEventListener('click', ()=>{
+  if (state.timer.running) timerPause(); else timerStart();
+});
+document.getElementById('timerReset').addEventListener('click', ()=>{
+  timerPause();
+  state.timer.remaining = state.timer.total = 0; renderTimer();
+});
+document.querySelectorAll('.timer-presets button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    let s = b.dataset.sec;
+    if (s==='custom'){
+      const v = prompt('Minutes:', '15'); if (!v) return;
+      s = Math.max(1, parseInt(v,10))*60;
+    }
+    timerPause();
+    state.timer.remaining = state.timer.total = parseInt(s,10);
+    renderTimer();
+  });
+});
+
+/* ============================================================
+   SHORTCUTS
+   ============================================================ */
+let scEditing = false;
+function renderShortcuts(){
+  const wrap = document.getElementById('shortcuts');
+  const tiles = state.shortcuts.map((s,i)=>`
+    <a class="sc" href="${scEditing?'#':s.url}" ${scEditing?'':'target="_blank" rel="noopener"'} data-idx="${i}">
+      <div class="icon">${s.icon||'🔗'}</div>
+      <div>${escapeHtml(s.label||'Link')}</div>
+      ${scEditing?'<div style="position:absolute;top:4px;right:6px;color:var(--bad);font-size:14px">×</div>':''}
+    </a>`).join('');
+  wrap.innerHTML = tiles + `<button class="sc add" id="addSc"><div class="icon">＋</div><div>Add</div></button>`;
+  if (scEditing){
+    wrap.querySelectorAll('.sc[data-idx]').forEach(el=>{
+      el.addEventListener('click', e=>{
+        e.preventDefault();
+        if (confirm('Remove this shortcut?')){
+          state.shortcuts.splice(parseInt(el.dataset.idx,10),1);
+          persist('shortcuts'); renderShortcuts();
+        }
+      });
+    });
+  }
+  document.getElementById('addSc').addEventListener('click', addShortcut);
+}
+function addShortcut(){
+  openModal(`
+    <h3>New shortcut</h3>
+    <div class="modal-row"><label>Label</label><input id="scLabel" placeholder="Reddit"></div>
+    <div class="modal-row"><label>URL</label><input id="scUrl" placeholder="https://…"></div>
+    <div class="modal-row"><label>Emoji icon</label><input id="scIcon" placeholder="🔗" maxlength="2"></div>
+    <div class="modal-actions">
+      <button data-close>Cancel</button>
+      <button class="primary" id="scSave">Save</button>
+    </div>`);
+  document.getElementById('scSave').addEventListener('click', ()=>{
+    const url = document.getElementById('scUrl').value.trim();
+    const label = document.getElementById('scLabel').value.trim() || 'Link';
+    const icon = document.getElementById('scIcon').value.trim() || '🔗';
+    if (!url) return;
+    state.shortcuts.push({ url, label, icon });
+    persist('shortcuts'); closeModal(); renderShortcuts();
+  });
+}
+document.getElementById('editShortcuts').addEventListener('click', ()=>{
+  scEditing = !scEditing;
+  document.getElementById('editShortcuts').textContent = scEditing?'Done':'Edit';
+  renderShortcuts();
+});
+
+/* ============================================================
+   NAV + MODAL + UTIL
+   ============================================================ */
+document.querySelectorAll('.nav button').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    document.getElementById('sec-'+b.dataset.sec).classList.add('active');
+  });
+});
+function openModal(html){
+  const m = document.getElementById('modal'); m.innerHTML = html;
+  document.getElementById('modalBg').classList.add('open');
+  m.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click', closeModal));
+}
+function closeModal(){ document.getElementById('modalBg').classList.remove('open'); }
+document.getElementById('modalBg').addEventListener('click', e=>{
+  if (e.target.id==='modalBg') closeModal();
+});
+
+function uid(){ return Math.random().toString(36).slice(2,10) + Date.now().toString(36); }
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); }; }
+function autoGrow(t){ t.style.height='auto'; t.style.height=(t.scrollHeight+2)+'px'; }
+function fmt12(hhmm){ if (!hhmm) return ''; const [h,m]=hhmm.split(':').map(Number);
+  const p=h>=12?'PM':'AM'; const h12=((h+11)%12)+1; return `${h12}:${String(m).padStart(2,'0')} ${p}`; }
+
+/* ----- Boot ----- */
+function renderAll(){
+  renderGreet(); renderAuth(); renderCalendar(); renderNotes();
+  renderAlarms(); renderReminders(); renderShortcuts(); renderTimer();
+}
+renderAll();
+loadWeather();
+soundSel.value = state.timer.soundId;
+if ('Notification' in window && Notification.permission === 'default'){
+  // Ask politely after first interaction
+  document.body.addEventListener('click', ()=>Notification.requestPermission(), { once:true });
+}
+// Service worker
+if ('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/service-worker.js').catch(()=>{});
+}
+setInterval(renderGreet, 60000);
+</script>
+</body>
+</html>
