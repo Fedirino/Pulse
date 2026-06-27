@@ -2,7 +2,7 @@
   "name": "Pulse",
   "short_name": "Pulse",
   "description": "Your mobile home base — weather, calendar, notes, alarms, shortcuts.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
