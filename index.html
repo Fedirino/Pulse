@@ -66,10 +66,12 @@
   /* Crypto */
   .crypto-list{display:flex;flex-direction:column;gap:8px}
   .crypto-row{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--panel-2);border-radius:12px;padding:10px 12px}
-  .crypto-name{display:flex;flex-direction:column;gap:2px}
-  .crypto-name b{font-size:14px}
+  .crypto-left{display:flex;align-items:center;gap:10px;min-width:0}
+  .crypto-icon{width:22px;height:22px;border-radius:50%;flex:0 0 auto;background:#0d1220}
+  .crypto-name{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .crypto-name b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .crypto-name span{font-size:11px;color:var(--muted)}
-  .crypto-price{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-variant-numeric:tabular-nums}
+  .crypto-price{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-variant-numeric:tabular-nums;flex:0 0 auto}
   .crypto-price b{font-size:14px}
   .crypto-price span{font-size:11px}
   .up{color:var(--good)}
@@ -208,8 +210,7 @@
   <!-- Shortcuts -->
   <div class="card">
     <div class="card-head">
-      <div class="card-title">Shortcuts</div>
-      <button class="card-action" id="editShortcuts">Edit</button>
+      <div class="card-title">Apps</div>
     </div>
     <div class="shortcuts" id="shortcuts"></div>
   </div>
@@ -293,7 +294,7 @@
    Pulse — single-file SPA
    v0.1.0
    ============================================================ */
-const APP_VERSION = '0.1.6';
+const APP_VERSION = '0.1.7';
 document.getElementById('ver').textContent = APP_VERSION;
 
 /* ----- Firebase config -----
@@ -345,8 +346,9 @@ const state = {
     { label:'YouTube', url:'https://www.youtube.com/', iconSrc:'https://cdn.simpleicons.org/youtube/FF0000' },
     { label:'TikTok', url:'https://www.tiktok.com/', iconSrc:'https://cdn.simpleicons.org/tiktok/000000' },
     { label:'Maps',    url:'https://maps.google.com', iconSrc:'https://cdn.simpleicons.org/googlemaps/4285F4' },
-    { label:'Claude',  url:'https://claude.ai/', iconSrc:'https://cdn.simpleicons.org/anthropic/000000' },
+    { label:'Claude',  url:'https://claude.ai/', iconSrc:'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Cdefs%3E%3CradialGradient id=%22g%22 cx=%2250%25%22 cy=%2250%25%22 r=%2250%25%22%3E%3Cstop offset=%220%25%22 stop-color=%23E9DDFF/%3E%3Cstop offset=%22100%25%22 stop-color=%235A4FCF/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%2230%22 fill=%22url(%23g)%22/%3E%3Cg fill=%22none%22 stroke=%23FFFFFF stroke-opacity=%220.9%22 stroke-width=%224%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M32 12v8%22/%3E%3Cpath d=%22M32 44v8%22/%3E%3Cpath d=%22M12 32h8%22/%3E%3Cpath d=%22M44 32h8%22/%3E%3Cpath d=%22M18 18l6 6%22/%3E%3Cpath d=%22M40 40l6 6%22/%3E%3Cpath d=%22M46 18l-6 6%22/%3E%3Cpath d=%22M24 40l-6 6%22/%3E%3C/g%3E%3C/svg%3E' },
     { label:'Telegram', url:'https://web.telegram.org/', iconSrc:'https://cdn.simpleicons.org/telegram/26A5E4' },
+    { label:'Facebook', url:'https://facebook.com/', iconSrc:'https://cdn.simpleicons.org/facebook/1877F2' },
   ]),
   loc:      LS.get('loc', null), // {lat, lon, name}
   timer:    { remaining:0, running:false, total:0, soundId:'beep' },
@@ -360,8 +362,9 @@ function normalizeShortcuts(){
     YouTube: 'https://cdn.simpleicons.org/youtube/FF0000',
     TikTok: 'https://cdn.simpleicons.org/tiktok/000000',
     Maps: 'https://cdn.simpleicons.org/googlemaps/4285F4',
-    Claude: 'https://cdn.simpleicons.org/anthropic/5A4FCF',
+    Claude: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Cdefs%3E%3CradialGradient id=%22g%22 cx=%2250%25%22 cy=%2250%25%22 r=%2250%25%22%3E%3Cstop offset=%220%25%22 stop-color=%23E9DDFF/%3E%3Cstop offset=%22100%25%22 stop-color=%235A4FCF/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%2230%22 fill=%22url(%23g)%22/%3E%3Cg fill=%22none%22 stroke=%23FFFFFF stroke-opacity=%220.9%22 stroke-width=%224%22 stroke-linecap=%22round%22%3E%3Cpath d=%22M32 12v8%22/%3E%3Cpath d=%22M32 44v8%22/%3E%3Cpath d=%22M12 32h8%22/%3E%3Cpath d=%22M44 32h8%22/%3E%3Cpath d=%22M18 18l6 6%22/%3E%3Cpath d=%22M40 40l6 6%22/%3E%3Cpath d=%22M46 18l-6 6%22/%3E%3Cpath d=%22M24 40l-6 6%22/%3E%3C/g%3E%3C/svg%3E',
     Telegram: 'https://cdn.simpleicons.org/telegram/26A5E4',
+    Facebook: 'https://cdn.simpleicons.org/facebook/1877F2',
   };
   let changed = false;
   const shortcuts = (state.shortcuts || []).map(s => {
@@ -385,6 +388,18 @@ function normalizeShortcuts(){
       changed = true;
       return { ...s, iconSrc: fallbackIcons.TikTok };
     }
+    if (s && s.label === 'Claude') {
+        changed = true;
+        return { ...s, iconSrc: fallbackIcons.Claude };
+      }
+      if (s && s.label === 'Telegram') {
+        changed = true;
+        return { ...s, iconSrc: fallbackIcons.Telegram };
+      }
+      if (s && s.label === 'Facebook') {
+        changed = true;
+        return { ...s, iconSrc: fallbackIcons.Facebook };
+      }
     return s;
   });
   const has = (label) => shortcuts.some(s => s && s.label === label);
@@ -395,6 +410,7 @@ function normalizeShortcuts(){
   if (!has('Maps')) { shortcuts.push({ label:'Maps', url:'https://maps.google.com', iconSrc:fallbackIcons.Maps }); changed = true; }
   if (!has('Claude')) { shortcuts.push({ label:'Claude', url:'https://claude.ai/', iconSrc:fallbackIcons.Claude }); changed = true; }
   if (!has('Telegram')) { shortcuts.push({ label:'Telegram', url:'https://web.telegram.org/', iconSrc:fallbackIcons.Telegram }); changed = true; }
+  if (!has('Facebook')) { shortcuts.push({ label:'Facebook', url:'https://facebook.com/', iconSrc:fallbackIcons.Facebook }); changed = true; }
   state.shortcuts = shortcuts.filter(s => s.label !== 'Calendar');
   if (changed) LS.set('shortcuts', state.shortcuts);
 }
@@ -557,10 +573,14 @@ async function loadCrypto(){
       const pct = Number(c.price_change_percentage_24h ?? 0);
       const cls = pct >= 0 ? 'up' : 'down';
       const sign = pct >= 0 ? '+' : '';
+      const img = c.image || '';
       return `<div class="crypto-row">
-        <div class="crypto-name">
-          <b>${escapeHtml(c.name)} <span style="color:var(--muted)">${escapeHtml((c.symbol || '').toUpperCase())}</span></b>
-          <span>Rank #${c.market_cap_rank ?? '—'}</span>
+        <div class="crypto-left">
+          <img class="crypto-icon" src="${img}" alt="${escapeHtml(c.symbol || c.name)}" loading="lazy">
+          <div class="crypto-name">
+            <b>${escapeHtml(c.name)} <span style="color:var(--muted)">${escapeHtml((c.symbol || '').toUpperCase())}</span></b>
+            <span>Rank #${c.market_cap_rank ?? '—'}</span>
+          </div>
         </div>
         <div class="crypto-price">
           <b>$${Number(c.current_price).toLocaleString(undefined,{maximumFractionDigits:c.current_price < 1 ? 6 : 2})}</b>
@@ -939,55 +959,16 @@ document.querySelectorAll('.timer-presets button').forEach(b=>{
 });
 
 /* ============================================================
-   SHORTCUTS
+   APPS
    ============================================================ */
-let scEditing = false;
 function renderShortcuts(){
   const wrap = document.getElementById('shortcuts');
-  const tiles = state.shortcuts.map((s,i)=>`
-    <a class="sc" href="${scEditing?'#':s.url}" ${scEditing?'':'target="_blank" rel="noopener"'} data-idx="${i}">
+  wrap.innerHTML = state.shortcuts.map(s=>`
+    <a class="sc" href="${s.url}" target="_blank" rel="noopener">
       ${s.iconSrc ? `<img class="iconimg" src="${s.iconSrc}" alt="">` : `<div class="icon">${s.icon||'🔗'}</div>`}
       <div>${escapeHtml(s.label||'Link')}</div>
-      ${scEditing?'<div style="position:absolute;top:4px;right:6px;color:var(--bad);font-size:14px">×</div>':''}
     </a>`).join('');
-  wrap.innerHTML = tiles + `<button class="sc add" id="addSc"><div class="icon">＋</div><div>Add</div></button>`;
-  if (scEditing){
-    wrap.querySelectorAll('.sc[data-idx]').forEach(el=>{
-      el.addEventListener('click', e=>{
-        e.preventDefault();
-        if (confirm('Remove this shortcut?')){
-          state.shortcuts.splice(parseInt(el.dataset.idx,10),1);
-          persist('shortcuts'); renderShortcuts();
-        }
-      });
-    });
-  }
-  document.getElementById('addSc').addEventListener('click', addShortcut);
 }
-function addShortcut(){
-  openModal(`
-    <h3>New shortcut</h3>
-    <div class="modal-row"><label>Label</label><input id="scLabel" placeholder="Reddit"></div>
-    <div class="modal-row"><label>URL</label><input id="scUrl" placeholder="https://…"></div>
-    <div class="modal-row"><label>Emoji icon</label><input id="scIcon" placeholder="🔗" maxlength="2"></div>
-    <div class="modal-actions">
-      <button data-close>Cancel</button>
-      <button class="primary" id="scSave">Save</button>
-    </div>`);
-  document.getElementById('scSave').addEventListener('click', ()=>{
-    const url = document.getElementById('scUrl').value.trim();
-    const label = document.getElementById('scLabel').value.trim() || 'Link';
-    const icon = document.getElementById('scIcon').value.trim() || '🔗';
-    if (!url) return;
-    state.shortcuts.push({ url, label, icon });
-    persist('shortcuts'); closeModal(); renderShortcuts();
-  });
-}
-document.getElementById('editShortcuts').addEventListener('click', ()=>{
-  scEditing = !scEditing;
-  document.getElementById('editShortcuts').textContent = scEditing?'Done':'Edit';
-  renderShortcuts();
-});
 
 /* ============================================================
    NAV + MODAL + UTIL
