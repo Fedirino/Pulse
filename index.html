@@ -117,7 +117,8 @@
   .sc{aspect-ratio:1;background:var(--panel-2);border:1px solid var(--line);border-radius:14px;
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
     text-decoration:none;color:var(--text);font-size:11px;text-align:center;padding:6px}
-  .sc .icon{font-size:26px}
+  .sc .icon{font-size:26px;line-height:1}
+  .sc .iconimg{width:26px;height:26px;display:block;object-fit:contain}
   .sc.add{color:var(--muted);border-style:dashed}
   /* Modal */
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:50;
@@ -289,7 +290,7 @@
    Pulse — single-file SPA
    v0.1.0
    ============================================================ */
-const APP_VERSION = '0.1.0';
+const APP_VERSION = '0.1.1';
 document.getElementById('ver').textContent = APP_VERSION;
 
 /* ----- Firebase config -----
@@ -338,13 +339,34 @@ const state = {
   shortcuts:LS.get('shortcuts', [
     { icon:'📧', label:'Mail',    url:'https://mail.google.com' },
     { icon:'📅', label:'Calendar',url:'https://calendar.google.com' },
-    { icon:'🎵', label:'Music',   url:'https://music.youtube.com' },
+    { icon:'🎧', label:'Spotify', url:'https://open.spotify.com/' },
     { icon:'🗺️', label:'Maps',    url:'https://maps.google.com' },
   ]),
   loc:      LS.get('loc', null), // {lat, lon, name}
   timer:    { remaining:0, running:false, total:0, soundId:'beep' },
   calCursor: new Date(),
 };
+
+function normalizeShortcuts(){
+  let changed = false;
+  state.shortcuts = (state.shortcuts || []).map(s => {
+    if (s && (s.label === 'Music' || /music\.youtube\.com/i.test(s.url || ''))) {
+      changed = true;
+      return {
+        label: 'Spotify',
+        url: 'https://open.spotify.com/',
+        iconSrc: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%2230%22 fill=%2322c55e/%3E%3Cpath d=%22M17 25c10-4 21-3 30 1%22 stroke=%230b1320 stroke-width=%225.5%22 stroke-linecap=%22round%22 fill=%22none%22/%3E%3Cpath d=%22M19 34c8-3 17-2 25 1%22 stroke=%230b1320 stroke-width=%224.8%22 stroke-linecap=%22round%22 fill=%22none%22/%3E%3Cpath d=%22M21 42c7-2 13-1 19 1%22 stroke=%230b1320 stroke-width=%224.2%22 stroke-linecap=%22round%22 fill=%22none%22/%3E%3C/svg%3E'
+      };
+    }
+    if (s && s.label === 'Spotify' && !s.url) {
+      changed = true;
+      return { ...s, url: 'https://open.spotify.com/' };
+    }
+    return s;
+  });
+  if (changed) LS.set('shortcuts', state.shortcuts);
+}
+normalizeShortcuts();
 
 function persist(key){ LS.set(key, state[key]); syncUp(key); }
 
@@ -843,7 +865,7 @@ function renderShortcuts(){
   const wrap = document.getElementById('shortcuts');
   const tiles = state.shortcuts.map((s,i)=>`
     <a class="sc" href="${scEditing?'#':s.url}" ${scEditing?'':'target="_blank" rel="noopener"'} data-idx="${i}">
-      <div class="icon">${s.icon||'🔗'}</div>
+      ${s.iconSrc ? `<img class="iconimg" src="${s.iconSrc}" alt="">` : `<div class="icon">${s.icon||'🔗'}</div>`}
       <div>${escapeHtml(s.label||'Link')}</div>
       ${scEditing?'<div style="position:absolute;top:4px;right:6px;color:var(--bad);font-size:14px">×</div>':''}
     </a>`).join('');
