@@ -67,6 +67,13 @@
   .wx-day .we{font-size:18px;margin:2px 0}
   .wx-day .wt{font-weight:600;font-size:12px}
   .wx-day .wn{color:var(--muted);font-size:11px}
+  .wx-hourly{margin-top:10px}
+  .wx-hourly-label{font-size:12px;color:var(--muted);margin-bottom:6px}
+  .wx-hours{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+  .wx-hour{min-width:64px;padding:8px 6px;border-radius:10px;background:var(--panel-2);border:1px solid rgba(255,255,255,.05);text-align:center}
+  .wx-hour .t{font-size:11px;color:var(--muted)}
+  .wx-hour .i{font-size:18px;line-height:1.2;margin:2px 0}
+  .wx-hour .v{font-size:12px;font-weight:600}
   .wx-alerts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
   .wx-alert{background:rgba(255,61,242,.10);color:#ffd0fb;border:1px solid rgba(255,61,242,.24);
     border-radius:999px;padding:6px 10px;font-size:11px;line-height:1.2}
@@ -202,10 +209,14 @@
       </div>
     </div>
     <div class="wx-expanded">
-      <div class="wx-alerts" id="wxAlerts"></div>
-      <div class="wx-week" id="wxWeek"></div>
-      <div class="wx-meta" style="text-align:left;font-size:12px;margin-bottom:4px">Radar</div>
-      <div class="wx-radar" id="wxRadar"></div>
+     <div class="wx-alerts" id="wxAlerts"></div>
+     <div class="wx-week" id="wxWeek"></div>
+     <div class="wx-hourly" id="wxHourlyWrap">
+       <div class="wx-hourly-label">Hourly</div>
+       <div class="wx-hours" id="wxHours"></div>
+     </div>
+     <div class="wx-meta" style="text-align:left;font-size:12px;margin-bottom:4px">Radar</div>
+     <div class="wx-radar" id="wxRadar"></div>
     </div>
   </div>
 
@@ -302,9 +313,9 @@
 <script>
 /* ============================================================
    Pulse — single-file SPA
-   v0.1.11
+   v0.1.12
    ============================================================ */
-const APP_VERSION = '0.1.11';
+const APP_VERSION = '0.1.12';
 document.getElementById('ver').textContent = APP_VERSION;
 
 /* ----- Firebase config -----
@@ -347,7 +358,7 @@ const LS = {
 
 const CLAUDE_ICON = './claude-logo.jpg?v=0.1.10';
 const HERMES_ICON = './hermes-logo.png?v=0.1.11';
-const LINKEDIN_ICON = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"%3E%3Crect width="64" height="64" rx="14" fill="%230A66C2"/%3E%3Cpath fill="white" d="M18 24h8v22h-8zM22 14.5A4.5 4.5 0 1 1 22 23.5a4.5 4.5 0 0 1 0-9zm14 9.5v3.4h.1c1-1.9 3.5-3.9 7.2-3.9 7.7 0 9.1 5 9.1 11.5V46h-8V36.8c0-2.2 0-5-3.1-5s-3.6 2.4-3.6 4.8V46h-8V24h8z"/%3E%3C/svg%3E';
+const LINKEDIN_ICON = './linkedin-logo.svg?v=0.1.12';
 
 const state = {
   notes:    LS.get('notes', []),
@@ -503,8 +514,9 @@ async function loadWeather(){
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}`+
       `&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m`+
-      `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,sunrise,sunset&temperature_unit=fahrenheit`+
-      `&wind_speed_unit=mph&timezone=auto&forecast_days=10`;
+      `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,sunrise,sunset`+
+      `&hourly=temperature_2m,weather_code,precipitation_probability`+
+      `&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=auto&forecast_days=10&forecast_hours=24`;
     const r = await fetch(url);
     const d = await r.json();
     const cur = d.current, day = d.daily;
@@ -535,7 +547,6 @@ async function loadWeather(){
       const dt = new Date(iso+'T00:00');
       const wd = i===0 ? 'Today' : dt.toLocaleDateString(undefined,{weekday:'short'});
       const code = day.weather_code[i];
-      const rain = day.precipitation_probability_max?.[i];
       return `<button class="wx-day" data-idx="${i}">
         <div class="wd">${wd}</div>
         <div class="we">${wxIcon(code)}</div>
@@ -543,6 +554,26 @@ async function loadWeather(){
         <div class="wn">${Math.round(day.temperature_2m_min[i])}°</div>
       </button>`;
     }).join('');
+
+    const hours = document.getElementById('wxHours');
+    const hourly = d.hourly || {};
+    const hourTimes = hourly.time || [];
+    const now = new Date();
+    const upcoming = hourTimes.map((iso, i) => ({
+      iso,
+      t: new Date(iso),
+      temp: hourly.temperature_2m?.[i],
+      code: hourly.weather_code?.[i],
+      rain: hourly.precipitation_probability?.[i],
+    })).filter(h => h.t >= now).slice(0, 12);
+    hours.innerHTML = upcoming.length
+      ? upcoming.map(h => `
+        <div class="wx-hour">
+          <div class="t">${h.t.toLocaleTimeString(undefined, { hour:'numeric' })}</div>
+          <div class="i">${wxIcon(h.code)}</div>
+          <div class="v">${Math.round(h.temp)}°</div>
+        </div>`).join('')
+      : '<div class="wx-alert" style="margin:0">Hourly unavailable.</div>';
 
     const showDetail = (i) => {
       const code = day.weather_code[i];
