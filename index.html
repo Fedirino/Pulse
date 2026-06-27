@@ -3,25 +3,25 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#0a0e1a" />
+<meta name="theme-color" content="#070816" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <title>Pulse</title>
 <link rel="manifest" href="/manifest.json" />
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230a0e1a'/%3E%3Cpath d='M8 32 L20 32 L26 18 L34 46 L40 32 L56 32' stroke='%2300d4ff' stroke-width='4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23ff3df2'/%3E%3Cstop offset='1' stop-color='%2300e5ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%23070816'/%3E%3Cpath d='M10 36h10l5-12 8 26 6-18h16' stroke='url(%23g)' stroke-width='4.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
 <style>
   :root{
-    --bg:#0a0e1a; --panel:#11172a; --panel-2:#162038; --line:#1f2a44;
-    --text:#e7ecf5; --muted:#8a93a8; --accent:#00d4ff; --accent-2:#5b8cff;
-    --warn:#ffb547; --bad:#ff5c7a; --good:#3ddc97;
+    --bg:#070816; --bg-2:#0c1024; --panel:rgba(14,18,38,.88); --panel-2:rgba(22,28,54,.92);
+    --line:rgba(121,140,255,.24); --text:#f2f5ff; --muted:#98a0c6; --accent:#ff3df2; --accent-2:#00e5ff;
+    --accent-3:#8b5cf6; --warn:#ffcb6b; --bad:#ff6482; --good:#4ef0b8;
     --radius:18px; --pad:14px;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+  html,body{margin:0;padding:0;background:radial-gradient(circle at top, rgba(255,61,242,.12), transparent 32%), radial-gradient(circle at 20% 20%, rgba(0,229,255,.11), transparent 28%), linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);color:var(--text);
     font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
     overscroll-behavior-y:contain;-webkit-tap-highlight-color:transparent;}
   body{padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(72px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
-    max-width:520px;margin:0 auto;}
+    max-width:520px;margin:0 auto;position:relative;isolation:isolate}
   h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.01em}
   button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
   input,textarea,select{font:inherit;color:inherit;background:var(--panel-2);
@@ -29,20 +29,20 @@
   input:focus,textarea:focus,select:focus{border-color:var(--accent)}
   /* Header */
   .topbar{display:flex;align-items:center;justify-content:space-between;
-    padding:18px 16px 8px;}
+    padding:18px 16px 8px;position:sticky;top:0;z-index:30;backdrop-filter:blur(14px);background:linear-gradient(180deg, rgba(7,8,22,.88), rgba(7,8,22,.44));border-bottom:1px solid rgba(255,255,255,.04)}
   .greet{font-size:22px;font-weight:600}
   .greet small{display:block;color:var(--muted);font-weight:400;font-size:13px;margin-top:2px}
-  .auth-btn{padding:8px 12px;border-radius:999px;background:var(--panel);border:1px solid var(--line);
-    font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .auth-btn{padding:8px 12px;border-radius:999px;background:linear-gradient(135deg, rgba(255,61,242,.12), rgba(0,229,255,.08));border:1px solid rgba(255,255,255,.1);
+    font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;box-shadow:0 0 0 1px rgba(255,61,242,.05), 0 14px 30px rgba(0,0,0,.22)}
   .auth-btn .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
   .auth-btn.online .dot{background:var(--good)}
   /* Cards */
   .stack{display:flex;flex-direction:column;gap:12px;padding:6px 12px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
-    padding:var(--pad);position:relative;overflow:hidden}
+  .card{background:linear-gradient(180deg, rgba(21,25,48,.94), rgba(12,14,30,.92));border:1px solid rgba(120,137,255,.18);border-radius:var(--radius);
+    padding:var(--pad);position:relative;overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03)}
   .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-  .card-title{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
-  .card-action{font-size:13px;color:var(--accent)}
+  .card-title{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#b7bfdf}
+  .card-action{font-size:13px;color:var(--accent-2);text-shadow:0 0 12px rgba(0,229,255,.24)}
   /* Weather */
   .wx-compact{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .wx-temp{font-size:46px;font-weight:300;letter-spacing:-.02em;line-height:1}
@@ -58,16 +58,16 @@
   .wx-day .wt{font-weight:600;font-size:12px}
   .wx-day .wn{color:var(--muted);font-size:11px}
   .wx-alerts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-  .wx-alert{background:rgba(255,181,71,.12);color:#ffd28a;border:1px solid rgba(255,181,71,.28);
+  .wx-alert{background:rgba(255,61,242,.10);color:#ffd0fb;border:1px solid rgba(255,61,242,.24);
     border-radius:999px;padding:6px 10px;font-size:11px;line-height:1.2}
   .wx-radar{aspect-ratio:16/10;background:#000;border-radius:12px;overflow:hidden;
-    border:1px solid var(--line);margin-top:8px}
+    border:1px solid rgba(0,229,255,.16);margin-top:8px;box-shadow:0 0 0 1px rgba(255,61,242,.06), 0 0 24px rgba(0,229,255,.06)}
   .wx-radar iframe{width:100%;height:100%;border:0}
   /* Crypto */
   .crypto-list{display:flex;flex-direction:column;gap:8px}
-  .crypto-row{display:flex;justify-content:space-between;gap:10px;align-items:center;background:var(--panel-2);border-radius:12px;padding:10px 12px}
+  .crypto-row{display:flex;justify-content:space-between;gap:10px;align-items:center;background:linear-gradient(135deg, rgba(255,61,242,.08), rgba(0,229,255,.04));border-radius:12px;padding:10px 12px;border:1px solid rgba(255,255,255,.05)}
   .crypto-left{display:flex;align-items:center;gap:10px;min-width:0}
-  .crypto-icon{width:22px;height:22px;border-radius:50%;flex:0 0 auto;background:#0d1220}
+  .crypto-icon{width:22px;height:22px;border-radius:50%;flex:0 0 auto;background:#0d1220;box-shadow:0 0 0 1px rgba(0,229,255,.16), 0 0 12px rgba(255,61,242,.08)}
   .crypto-name{display:flex;flex-direction:column;gap:2px;min-width:0}
   .crypto-name b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .crypto-name span{font-size:11px;color:var(--muted)}
@@ -85,7 +85,7 @@
   .cal-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:8px;
     background:transparent;color:var(--text);position:relative;cursor:pointer}
   .cal-cell.dim{color:#3a4360}
-  .cal-cell.today{background:var(--accent);color:#001520;font-weight:600}
+  .cal-cell.today{background:linear-gradient(135deg, var(--accent), var(--accent-2));color:#070816;font-weight:700;box-shadow:0 8px 16px rgba(0,229,255,.15)}
   .cal-cell.has-event::after{content:"";position:absolute;bottom:4px;width:4px;height:4px;
     border-radius:50%;background:var(--accent-2)}
   .cal-cell.today.has-event::after{background:#001520}
@@ -95,22 +95,22 @@
   .cal-event .when{color:var(--muted);font-size:12px}
   /* Notes */
   .notes-list{display:flex;flex-direction:column;gap:8px}
-  .note{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+  .note{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:10px 12px}
   .note textarea{background:transparent;border:0;padding:0;resize:none;width:100%;
     min-height:48px;font-size:14px;line-height:1.4}
   .note-foot{display:flex;justify-content:space-between;align-items:center;margin-top:6px;
     font-size:11px;color:var(--muted)}
   .note-del{color:var(--bad);font-size:12px}
   .add-row{display:flex;gap:8px;margin-top:10px}
-  .add-row button{padding:10px 14px;border-radius:10px;background:var(--accent);color:#001520;
-    font-weight:600;font-size:14px}
+  .add-row button{padding:10px 14px;border-radius:10px;background:linear-gradient(135deg, var(--accent), var(--accent-2));color:#07101b;
+    font-weight:700;font-size:14px;box-shadow:0 8px 18px rgba(255,61,242,.14)}
   /* Alarms */
-  .tabs{display:flex;gap:4px;background:var(--panel-2);padding:4px;border-radius:10px;margin-bottom:10px}
+  .tabs{display:flex;gap:4px;background:rgba(255,255,255,.03);padding:4px;border-radius:10px;margin-bottom:10px;border:1px solid rgba(255,255,255,.05)}
   .tabs button{flex:1;padding:8px;border-radius:8px;font-size:13px;color:var(--muted)}
-  .tabs button.active{background:var(--panel);color:var(--text)}
+  .tabs button.active{background:linear-gradient(135deg, rgba(255,61,242,.18), rgba(0,229,255,.10));color:var(--text);box-shadow:0 0 0 1px rgba(0,229,255,.10) inset}
   .alarm-list{display:flex;flex-direction:column;gap:8px}
   .alarm{display:flex;align-items:center;justify-content:space-between;gap:10px;
-    background:var(--panel-2);border-radius:12px;padding:10px 12px}
+    background:linear-gradient(135deg, rgba(255,61,242,.05), rgba(0,229,255,.03));border-radius:12px;padding:10px 12px;border:1px solid rgba(255,255,255,.05)}
   .alarm .time{font-size:22px;font-weight:300}
   .alarm .label{color:var(--muted);font-size:12px}
   .alarm.off .time{color:var(--muted)}
@@ -118,50 +118,50 @@
     transition:background .15s;flex-shrink:0}
   .switch::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;
     background:#fff;transition:transform .15s}
-  .switch.on{background:var(--accent)}
+  .switch.on{background:linear-gradient(135deg, var(--accent), var(--accent-2))}
   .switch.on::after{transform:translateX(16px)}
   .timer-display{font-size:54px;font-weight:200;text-align:center;letter-spacing:-.03em;
     font-variant-numeric:tabular-nums;margin:6px 0 12px}
   .timer-controls{display:flex;gap:8px;justify-content:center}
-  .timer-controls button{padding:10px 18px;border-radius:10px;background:var(--panel-2);
-    border:1px solid var(--line);font-size:14px}
-  .timer-controls button.primary{background:var(--accent);color:#001520;border-color:var(--accent);font-weight:600}
+  .timer-controls button{padding:10px 18px;border-radius:10px;background:rgba(255,255,255,.04);
+    border:1px solid rgba(255,255,255,.08);font-size:14px}
+  .timer-controls button.primary{background:linear-gradient(135deg, var(--accent), var(--accent-2));color:#07101b;border-color:transparent;font-weight:700}
   .timer-presets{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
-  .timer-presets button{padding:8px;border-radius:8px;background:var(--panel-2);font-size:12px;color:var(--muted)}
+  .timer-presets button{padding:8px;border-radius:8px;background:rgba(255,255,255,.04);font-size:12px;color:var(--muted);border:1px solid rgba(255,255,255,.05)}
   /* Shortcuts */
   .shortcuts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-  .sc{aspect-ratio:1;background:var(--panel-2);border:1px solid var(--line);border-radius:14px;
+  .sc{aspect-ratio:1;background:linear-gradient(180deg, rgba(255,61,242,.08), rgba(0,229,255,.03));border:1px solid rgba(255,255,255,.08);border-radius:14px;
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
     text-decoration:none;color:var(--text);font-size:11px;text-align:center;padding:6px}
-  .sc .icon{font-size:26px;line-height:1}
-  .sc .iconimg{width:26px;height:26px;display:block;object-fit:contain}
+  .sc .icon{font-size:26px;line-height:1;text-shadow:0 0 12px rgba(0,229,255,.18)}
+  .sc .iconimg{width:36px;height:36px;display:block;object-fit:contain;filter:drop-shadow(0 0 8px rgba(0,229,255,.18)) drop-shadow(0 0 12px rgba(255,61,242,.12))}
   .sc.add{color:var(--muted);border-style:dashed}
   /* Modal */
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:50;
     align-items:flex-end;justify-content:center;padding:16px}
   .modal-bg.open{display:flex}
-  .modal{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  .modal{background:linear-gradient(180deg, rgba(19,23,46,.98), rgba(11,13,28,.98));border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);
     width:100%;max-width:480px;padding:18px;max-height:85vh;overflow:auto}
   .modal h3{margin-bottom:12px;font-size:17px}
   .modal-row{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
   .modal-row label{font-size:12px;color:var(--muted)}
   .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
-  .modal-actions button{padding:10px 16px;border-radius:10px;background:var(--panel-2);border:1px solid var(--line)}
-  .modal-actions button.primary{background:var(--accent);color:#001520;border-color:var(--accent);font-weight:600}
+  .modal-actions button{padding:10px 16px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+  .modal-actions button.primary{background:linear-gradient(135deg, var(--accent), var(--accent-2));color:#07101b;border-color:transparent;font-weight:700}
   /* Bottom nav */
-  .nav{position:fixed;bottom:0;left:0;right:0;background:rgba(10,14,26,.92);
-    backdrop-filter:blur(10px);border-top:1px solid var(--line);
+  .nav{position:fixed;bottom:0;left:0;right:0;background:rgba(7,8,22,.88);
+    backdrop-filter:blur(16px);border-top:1px solid rgba(255,255,255,.08);
     display:flex;justify-content:space-around;padding:8px 8px calc(8px + env(safe-area-inset-bottom));
     z-index:40}
   .nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
     padding:6px;color:var(--muted);font-size:10px}
-  .nav button.active{color:var(--accent)}
+  .nav button.active{color:var(--accent-2);text-shadow:0 0 10px rgba(0,229,255,.22)}
   .nav .ic{font-size:20px}
   /* Sections */
   .section{display:none}
   .section.active{display:block}
   .empty{color:var(--muted);text-align:center;padding:18px 8px;font-size:13px}
-  .version{text-align:center;color:#3a4360;font-size:11px;padding:14px 0 4px}
+  .version{text-align:center;color:#6e779d;font-size:11px;padding:14px 0 4px;letter-spacing:.04em}
 </style>
 </head>
 <body>
@@ -215,7 +215,7 @@
     <div class="shortcuts" id="shortcuts"></div>
   </div>
 
-  <div class="version">Pulse v<span id="ver">0.1.0</span> · <span id="syncStatus">local</span></div>
+  <div class="version">Pulse v<span id="ver">0.1.9</span> · <span id="syncStatus">local</span></div>
 </main>
 
 <!-- NOTES -->
@@ -292,9 +292,9 @@
 <script>
 /* ============================================================
    Pulse — single-file SPA
-   v0.1.0
+   v0.1.9
    ============================================================ */
-const APP_VERSION = '0.1.8';
+const APP_VERSION = '0.1.9';
 document.getElementById('ver').textContent = APP_VERSION;
 
 /* ----- Firebase config -----
@@ -335,6 +335,8 @@ const LS = {
   set(k, v){ localStorage.setItem('pulse:'+k, JSON.stringify(v)); },
 };
 
+const CLAUDE_ICON = './claude-logo.jpg';
+
 const state = {
   notes:    LS.get('notes', []),
   events:   LS.get('events', []),
@@ -346,7 +348,7 @@ const state = {
     { label:'YouTube', url:'https://www.youtube.com/', iconSrc:'https://cdn.simpleicons.org/youtube/FF0000' },
     { label:'TikTok', url:'https://www.tiktok.com/', iconSrc:'https://cdn.simpleicons.org/tiktok/000000' },
     { label:'Maps',    url:'https://maps.google.com', iconSrc:'https://cdn.simpleicons.org/googlemaps/4285F4' },
-    { label:'Claude',  url:'https://claude.ai/', iconSrc:'https://cdn.simpleicons.org/anthropic/5A4FCF' },
+    { label:'Claude',  url:'https://claude.ai/', iconSrc:CLAUDE_ICON, icon:'🧠' },
     { label:'Telegram', url:'https://web.telegram.org/', iconSrc:'https://cdn.simpleicons.org/telegram/26A5E4' },
     { label:'Facebook', url:'https://facebook.com/', iconSrc:'https://cdn.simpleicons.org/facebook/1877F2' },
   ]),
@@ -362,14 +364,14 @@ function normalizeShortcuts(){
     YouTube: 'https://cdn.simpleicons.org/youtube/FF0000',
     TikTok: 'https://cdn.simpleicons.org/tiktok/000000',
     Maps: 'https://cdn.simpleicons.org/googlemaps/4285F4',
-    Claude: 'https://cdn.simpleicons.org/anthropic/5A4FCF',
+    Claude: CLAUDE_ICON,
     Telegram: 'https://cdn.simpleicons.org/telegram/26A5E4',
     Facebook: 'https://cdn.simpleicons.org/facebook/1877F2',
   };
   let changed = false;
   const shortcuts = (state.shortcuts || []).map(s => {
     if (!s) return s;
-    if (s.label === 'Claude') return { ...s, iconSrc: fallbackIcons.Claude };
+    if (s.label === 'Claude') return { ...s, iconSrc: fallbackIcons.Claude, icon: '🧠' };
     if (s.label === 'Telegram') return { ...s, iconSrc: fallbackIcons.Telegram };
     if (s.label === 'Facebook') return { ...s, iconSrc: fallbackIcons.Facebook };
     if (s.label === 'Spotify' && !s.iconSrc) return { ...s, iconSrc: fallbackIcons.Spotify };
@@ -940,7 +942,7 @@ function renderShortcuts(){
   const wrap = document.getElementById('shortcuts');
   wrap.innerHTML = state.shortcuts.map(s=>`
     <a class="sc" href="${s.url}" target="_blank" rel="noopener">
-      ${s.iconSrc ? `<img class="iconimg" src="${s.iconSrc}" alt="">` : `<div class="icon">${s.icon||'🔗'}</div>`}
+      ${s.iconSrc ? `<img class="iconimg" src="${s.iconSrc}" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">` : `<div class="icon" style="display:${s.iconSrc ? 'none' : 'flex'}">${s.icon||'🔗'}</div>`}
       <div>${escapeHtml(s.label||'Link')}</div>
     </a>`).join('');
 }
