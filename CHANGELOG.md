@@ -1,7 +1,8 @@
 # Changelog
 
-## v0.1.3 — 2026-06-27
-Shortcut cleanup update.
-- Removed the Calendar shortcut to free space for more apps
-- Swapped social icons to remote logo assets for better mobile rendering
+## v0.1.4 — 2026-06-27
+Home screen cleanup update.
+- Removed the in-app calendar card to free up space for apps
+- Added Gmail back to shortcuts
+- Kept Spotify / YouTube / TikTok shortcuts with logo assets
 - Bumped app version / manifest version / service worker cache
