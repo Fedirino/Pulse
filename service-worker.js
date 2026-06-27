@@ -1,5 +1,5 @@
 // Pulse service worker — minimal offline shell
-const CACHE = 'pulse-v0.1.4';
+const CACHE = 'pulse-v0.1.5';
 const ASSETS = ['/', '/index.html', '/manifest.json'];
 
 self.addEventListener('install', (e) => {

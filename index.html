@@ -270,7 +270,7 @@
    Pulse — single-file SPA
    v0.1.0
    ============================================================ */
-const APP_VERSION = '0.1.4';
+const APP_VERSION = '0.1.5';
 document.getElementById('ver').textContent = APP_VERSION;
 
 /* ----- Firebase config -----
@@ -321,7 +321,9 @@ const state = {
     { label:'Spotify', url:'https://open.spotify.com/', iconSrc:'https://cdn.simpleicons.org/spotify/1DB954' },
     { label:'YouTube', url:'https://www.youtube.com/', iconSrc:'https://cdn.simpleicons.org/youtube/FF0000' },
     { label:'TikTok', url:'https://www.tiktok.com/', iconSrc:'https://cdn.simpleicons.org/tiktok/000000' },
-    { icon:'🗺️', label:'Maps',    url:'https://maps.google.com' },
+    { label:'Maps',    url:'https://maps.google.com', iconSrc:'https://cdn.simpleicons.org/googlemaps/4285F4' },
+    { label:'Claude',  url:'https://claude.ai/', iconSrc:'https://cdn.simpleicons.org/anthropic/000000' },
+    { label:'Telegram', url:'https://web.telegram.org/', iconSrc:'https://cdn.simpleicons.org/telegram/26A5E4' },
   ]),
   loc:      LS.get('loc', null), // {lat, lon, name}
   timer:    { remaining:0, running:false, total:0, soundId:'beep' },
@@ -334,6 +336,9 @@ function normalizeShortcuts(){
     Spotify: 'https://cdn.simpleicons.org/spotify/1DB954',
     YouTube: 'https://cdn.simpleicons.org/youtube/FF0000',
     TikTok: 'https://cdn.simpleicons.org/tiktok/000000',
+    Maps: 'https://cdn.simpleicons.org/googlemaps/4285F4',
+    Claude: 'https://cdn.simpleicons.org/anthropic/000000',
+    Telegram: 'https://cdn.simpleicons.org/telegram/26A5E4',
   };
   let changed = false;
   const shortcuts = (state.shortcuts || []).map(s => {
@@ -364,6 +369,9 @@ function normalizeShortcuts(){
   if (!has('Spotify')) { shortcuts.push({ label:'Spotify', url:'https://open.spotify.com/', iconSrc:fallbackIcons.Spotify }); changed = true; }
   if (!has('YouTube')) { shortcuts.push({ label:'YouTube', url:'https://www.youtube.com/', iconSrc:fallbackIcons.YouTube }); changed = true; }
   if (!has('TikTok')) { shortcuts.push({ label:'TikTok', url:'https://www.tiktok.com/', iconSrc:fallbackIcons.TikTok }); changed = true; }
+  if (!has('Maps')) { shortcuts.push({ label:'Maps', url:'https://maps.google.com', iconSrc:fallbackIcons.Maps }); changed = true; }
+  if (!has('Claude')) { shortcuts.push({ label:'Claude', url:'https://claude.ai/', iconSrc:fallbackIcons.Claude }); changed = true; }
+  if (!has('Telegram')) { shortcuts.push({ label:'Telegram', url:'https://web.telegram.org/', iconSrc:fallbackIcons.Telegram }); changed = true; }
   state.shortcuts = shortcuts.filter(s => s.label !== 'Calendar');
   if (changed) LS.set('shortcuts', state.shortcuts);
 }
