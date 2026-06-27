@@ -11,17 +11,26 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23ff3df2'/%3E%3Cstop offset='1' stop-color='%2300e5ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%23070816'/%3E%3Cpath d='M10 36h10l5-12 8 26 6-18h16' stroke='url(%23g)' stroke-width='4.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
 <style>
   :root{
-    --bg:#070816; --bg-2:#0c1024; --panel:rgba(14,18,38,.88); --panel-2:rgba(22,28,54,.92);
-    --line:rgba(121,140,255,.24); --text:#f2f5ff; --muted:#98a0c6; --accent:#ff3df2; --accent-2:#00e5ff;
-    --accent-3:#8b5cf6; --warn:#ffcb6b; --bad:#ff6482; --good:#4ef0b8;
+    --bg:#050611; --bg-2:#0b1020; --panel:rgba(13,17,36,.86); --panel-2:rgba(20,26,50,.92);
+    --line:rgba(126,143,255,.26); --text:#f4f7ff; --muted:#9ca6cd; --accent:#ff4bd8; --accent-2:#36f0ff;
+    --accent-3:#8b5cf6; --warn:#ffcb6b; --bad:#ff6d86; --good:#4ef0b8;
     --radius:18px; --pad:14px;
   }
   *{box-sizing:border-box}
-  html,body{margin:0;padding:0;background:radial-gradient(circle at top, rgba(255,61,242,.12), transparent 32%), radial-gradient(circle at 20% 20%, rgba(0,229,255,.11), transparent 28%), linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);color:var(--text);
-    font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
-    overscroll-behavior-y:contain;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:
+        radial-gradient(circle at 20% -10%, rgba(255,75,216,.22), transparent 30%),
+        radial-gradient(circle at 80% 0%, rgba(54,240,255,.12), transparent 24%),
+        radial-gradient(circle at 50% 120%, rgba(139,92,246,.16), transparent 28%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);color:var(--text);
+      font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;
+      overscroll-behavior-y:contain;-webkit-tap-highlight-color:transparent;}
   body{padding:env(safe-area-inset-top) env(safe-area-inset-right) calc(72px + env(safe-area-inset-bottom)) env(safe-area-inset-left);
-    max-width:520px;margin:0 auto;position:relative;isolation:isolate}
+      max-width:520px;margin:0 auto;position:relative;isolation:isolate}
+    body::before{content:"";position:fixed;inset:0;background:
+      linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+      background-size:24px 24px;mask-image:linear-gradient(180deg, rgba(0,0,0,.9), transparent 88%);pointer-events:none;opacity:.35;z-index:-2}
+    body::after{content:"";position:fixed;inset:0;background:radial-gradient(circle at 50% 0%, rgba(255,75,216,.16), transparent 18%), radial-gradient(circle at 10% 10%, rgba(54,240,255,.10), transparent 16%), radial-gradient(circle at 90% 10%, rgba(139,92,246,.12), transparent 18%);pointer-events:none;z-index:-1;filter:blur(24px)}
   h1,h2,h3{margin:0;font-weight:600;letter-spacing:-.01em}
   button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
   input,textarea,select{font:inherit;color:inherit;background:var(--panel-2);
@@ -29,7 +38,7 @@
   input:focus,textarea:focus,select:focus{border-color:var(--accent)}
   /* Header */
   .topbar{display:flex;align-items:center;justify-content:space-between;
-    padding:18px 16px 8px;position:sticky;top:0;z-index:30;backdrop-filter:blur(14px);background:linear-gradient(180deg, rgba(7,8,22,.88), rgba(7,8,22,.44));border-bottom:1px solid rgba(255,255,255,.04)}
+      padding:18px 16px 8px;position:sticky;top:0;z-index:30;backdrop-filter:blur(18px);background:linear-gradient(180deg, rgba(5,6,17,.92), rgba(5,6,17,.52));border-bottom:1px solid rgba(255,255,255,.05);box-shadow:0 8px 24px rgba(0,0,0,.18)}
   .greet{font-size:22px;font-weight:600}
   .greet small{display:block;color:var(--muted);font-weight:400;font-size:13px;margin-top:2px}
   .auth-btn{padding:8px 12px;border-radius:999px;background:linear-gradient(135deg, rgba(255,61,242,.12), rgba(0,229,255,.08));border:1px solid rgba(255,255,255,.1);
@@ -38,8 +47,9 @@
   .auth-btn.online .dot{background:var(--good)}
   /* Cards */
   .stack{display:flex;flex-direction:column;gap:12px;padding:6px 12px}
-  .card{background:linear-gradient(180deg, rgba(21,25,48,.94), rgba(12,14,30,.92));border:1px solid rgba(120,137,255,.18);border-radius:var(--radius);
-    padding:var(--pad);position:relative;overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.03)}
+  .card{background:linear-gradient(180deg, rgba(20,24,48,.95), rgba(10,12,28,.95));border:1px solid rgba(126,143,255,.18);border-radius:var(--radius);
+      padding:var(--pad);position:relative;overflow:hidden;box-shadow:0 12px 34px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.03)}
+    .card::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(135deg, rgba(255,75,216,.28), rgba(54,240,255,.15), rgba(255,255,255,.02));-webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;opacity:.55}
   .card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
   .card-title{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#b7bfdf}
   .card-action{font-size:13px;color:var(--accent-2);text-shadow:0 0 12px rgba(0,229,255,.24)}
@@ -130,11 +140,11 @@
   .timer-presets button{padding:8px;border-radius:8px;background:rgba(255,255,255,.04);font-size:12px;color:var(--muted);border:1px solid rgba(255,255,255,.05)}
   /* Shortcuts */
   .shortcuts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-  .sc{aspect-ratio:1;background:linear-gradient(180deg, rgba(255,61,242,.08), rgba(0,229,255,.03));border:1px solid rgba(255,255,255,.08);border-radius:14px;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
-    text-decoration:none;color:var(--text);font-size:11px;text-align:center;padding:6px}
+  .sc{aspect-ratio:1;background:linear-gradient(180deg, rgba(255,75,216,.10), rgba(54,240,255,.04));border:1px solid rgba(255,255,255,.09);border-radius:16px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+      text-decoration:none;color:var(--text);font-size:11px;text-align:center;padding:6px;box-shadow:0 10px 18px rgba(0,0,0,.18)}
   .sc .icon{font-size:26px;line-height:1;text-shadow:0 0 12px rgba(0,229,255,.18)}
-  .sc .iconimg{width:36px;height:36px;display:block;object-fit:contain;filter:drop-shadow(0 0 8px rgba(0,229,255,.18)) drop-shadow(0 0 12px rgba(255,61,242,.12))}
+  .sc .iconimg{width:38px;height:38px;display:block;object-fit:contain;filter:drop-shadow(0 0 10px rgba(54,240,255,.18)) drop-shadow(0 0 14px rgba(255,75,216,.14))}
   .sc.add{color:var(--muted);border-style:dashed}
   /* Modal */
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:50;
@@ -349,7 +359,7 @@ const state = {
     { label:'TikTok', url:'https://www.tiktok.com/', iconSrc:'https://cdn.simpleicons.org/tiktok/000000' },
     { label:'Maps',    url:'https://maps.google.com', iconSrc:'https://cdn.simpleicons.org/googlemaps/4285F4' },
     { label:'Claude',  url:'https://claude.ai/', iconSrc:CLAUDE_ICON, icon:'🧠' },
-    { label:'Telegram', url:'https://web.telegram.org/', iconSrc:'https://cdn.simpleicons.org/telegram/26A5E4' },
+    { label:'Hermes', url:'tg://resolve', iconSrc:'./hermes-logo.svg' },
     { label:'Facebook', url:'https://facebook.com/', iconSrc:'https://cdn.simpleicons.org/facebook/1877F2' },
   ]),
   loc:      LS.get('loc', null), // {lat, lon, name}
@@ -365,14 +375,14 @@ function normalizeShortcuts(){
     TikTok: 'https://cdn.simpleicons.org/tiktok/000000',
     Maps: 'https://cdn.simpleicons.org/googlemaps/4285F4',
     Claude: CLAUDE_ICON,
-    Telegram: 'https://cdn.simpleicons.org/telegram/26A5E4',
+    Hermes: './hermes-logo.svg',
     Facebook: 'https://cdn.simpleicons.org/facebook/1877F2',
   };
   let changed = false;
   const shortcuts = (state.shortcuts || []).map(s => {
     if (!s) return s;
     if (s.label === 'Claude') return { ...s, iconSrc: fallbackIcons.Claude, icon: '🧠' };
-    if (s.label === 'Telegram') return { ...s, iconSrc: fallbackIcons.Telegram };
+    if (s.label === 'Hermes') return { ...s, iconSrc: fallbackIcons.Hermes, icon: '◉' };
     if (s.label === 'Facebook') return { ...s, iconSrc: fallbackIcons.Facebook };
     if (s.label === 'Spotify' && !s.iconSrc) return { ...s, iconSrc: fallbackIcons.Spotify };
     if (s.label === 'YouTube' && !s.iconSrc) return { ...s, iconSrc: fallbackIcons.YouTube };
@@ -386,7 +396,7 @@ function normalizeShortcuts(){
   if (!has('TikTok')) { shortcuts.push({ label:'TikTok', url:'https://www.tiktok.com/', iconSrc:fallbackIcons.TikTok }); changed = true; }
   if (!has('Maps')) { shortcuts.push({ label:'Maps', url:'https://maps.google.com', iconSrc:fallbackIcons.Maps }); changed = true; }
   if (!has('Claude')) { shortcuts.push({ label:'Claude', url:'https://claude.ai/', iconSrc:fallbackIcons.Claude }); changed = true; }
-  if (!has('Telegram')) { shortcuts.push({ label:'Telegram', url:'https://web.telegram.org/', iconSrc:fallbackIcons.Telegram }); changed = true; }
+  if (!has('Hermes')) { shortcuts.push({ label:'Hermes', url:'https://t.me/', iconSrc:fallbackIcons.Hermes }); changed = true; }
   if (!has('Facebook')) { shortcuts.push({ label:'Facebook', url:'https://facebook.com/', iconSrc:fallbackIcons.Facebook }); changed = true; }
   state.shortcuts = shortcuts.filter(s => s.label !== 'Calendar');
   if (changed) LS.set('shortcuts', state.shortcuts);
@@ -490,7 +500,7 @@ async function loadWeather(){
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}`+
       `&current=temperature_2m,weather_code,relative_humidity_2m,wind_speed_10m`+
-      `&daily=weather_code,temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit`+
+      `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_speed_10m_max,sunrise,sunset&temperature_unit=fahrenheit`+
       `&wind_speed_unit=mph&timezone=auto&forecast_days=10`;
     const r = await fetch(url);
     const d = await r.json();
@@ -515,21 +525,60 @@ async function loadWeather(){
     alertWrap.innerHTML = alerts.length
       ? alerts.map(a => `<div class="wx-alert">${escapeHtml(a)}</div>`).join('')
       : '<div class="wx-alert">No severe alerts in the next 10 days.</div>';
+
+    const fmt = (iso) => new Date(iso + 'T00:00').toLocaleDateString(undefined, { month:'short', day:'numeric' });
     const week = document.getElementById('wxWeek');
     week.innerHTML = day.time.map((iso,i)=>{
       const dt = new Date(iso+'T00:00');
       const wd = i===0 ? 'Today' : dt.toLocaleDateString(undefined,{weekday:'short'});
-      return `<div class="wx-day"><div class="wd">${wd}</div>
-        <div class="we">${wxIcon(day.weather_code[i])}</div>
+      const code = day.weather_code[i];
+      const rain = day.precipitation_probability_max?.[i];
+      return `<button class="wx-day" data-idx="${i}">
+        <div class="wd">${wd}</div>
+        <div class="we">${wxIcon(code)}</div>
         <div class="wt">${Math.round(day.temperature_2m_max[i])}°</div>
-        <div class="wn">${Math.round(day.temperature_2m_min[i])}°</div></div>`;
+        <div class="wn">${Math.round(day.temperature_2m_min[i])}°</div>
+      </button>`;
     }).join('');
-    // Radar (RainViewer embed, no key)
-    document.getElementById('wxRadar').innerHTML =
-      `<iframe loading="lazy" src="https://embed.windy.com/embed2.html?lat=${loc.lat}&lon=${loc.lon}&zoom=7&level=surface&overlay=radar&menu=&message=true&marker=&calendar=&pressure=&type=map&location=coordinates&detail=&detailLat=${loc.lat}&detailLon=${loc.lon}&metricWind=mph&metricTemp=%C2%B0F&radarRange=-1"></iframe>`;
+
+    const showDetail = (i) => {
+      const code = day.weather_code[i];
+      const date = new Date(day.time[i] + 'T00:00');
+      const dayName = i===0 ? 'Today' : date.toLocaleDateString(undefined,{weekday:'long'});
+      const monthDay = date.toLocaleDateString(undefined,{month:'long', day:'numeric'});
+      const sunrise = day.sunrise?.[i] ? new Date(day.sunrise[i]).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) : '—';
+      const sunset = day.sunset?.[i] ? new Date(day.sunset[i]).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) : '—';
+      const rain = day.precipitation_probability_max?.[i] ?? '—';
+      const precip = day.precipitation_sum?.[i] ?? '—';
+      const wind = day.wind_speed_10m_max?.[i] ?? '—';
+      const detail = {
+        title: `${dayName} · ${monthDay}`,
+        rows: [
+          ['Condition', wxDesc(code)],
+          ['High / Low', `${Math.round(day.temperature_2m_max[i])}° / ${Math.round(day.temperature_2m_min[i])}°`],
+          ['Rain chance', `${rain}%`],
+          ['Precip', `${precip} in`],
+          ['Wind', `${wind} mph`],
+          ['Sunrise', sunrise],
+          ['Sunset', sunset],
+        ]
+      };
+      openModal(`
+        <h3>${escapeHtml(detail.title)}</h3>
+        <div class="modal-row" style="gap:10px">
+          ${detail.rows.map(([k,v]) => `<div class="cal-event"><span>${escapeHtml(k)}</span><span class="when">${escapeHtml(String(v))}</span></div>`).join('')}
+        </div>
+        <div class="modal-actions"><button data-close class="primary">Close</button></div>
+      `);
+    };
+    week.querySelectorAll('.wx-day').forEach(btn => {
+      btn.addEventListener('click', () => showDetail(Number(btn.dataset.idx)));
+    });
+
+    const radar = document.getElementById('wxRadar');
+    radar.innerHTML = `<iframe src="https://www.rainviewer.com/map.html?loc=${loc.lat},${loc.lon},7&oF=0&oC=0&oU=0&oA=1&sm=1&sn=1&fb=0&colour=1&lang=en&mini=1&locAcc=true" loading="lazy"></iframe>`;
   } catch(e){
-    document.getElementById('wxDesc').textContent = 'Weather unavailable';
-    console.warn(e);
+    console.warn('weather fail', e);
   }
 }
 document.getElementById('wxToggle').addEventListener('click', ()=>{
