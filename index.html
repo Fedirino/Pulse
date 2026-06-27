@@ -144,7 +144,7 @@
       display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
       text-decoration:none;color:var(--text);font-size:11px;text-align:center;padding:6px;box-shadow:0 10px 18px rgba(0,0,0,.18)}
   .sc .icon{font-size:26px;line-height:1;text-shadow:0 0 12px rgba(0,229,255,.18)}
-  .sc .iconimg{width:38px;height:38px;display:block;object-fit:contain;filter:drop-shadow(0 0 10px rgba(54,240,255,.18)) drop-shadow(0 0 14px rgba(255,75,216,.14))}
+  .sc .iconimg{width:42px;height:42px;display:block;object-fit:contain;filter:drop-shadow(0 0 10px rgba(54,240,255,.18)) drop-shadow(0 0 14px rgba(255,75,216,.14))}
   .sc.add{color:var(--muted);border-style:dashed}
   /* Modal */
   .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:50;
@@ -225,7 +225,7 @@
     <div class="shortcuts" id="shortcuts"></div>
   </div>
 
-  <div class="version">Pulse v<span id="ver">0.1.9</span> · <span id="syncStatus">local</span></div>
+  <div class="version">Pulse v<span id="ver">0.1.10</span> · <span id="syncStatus">local</span></div>
 </main>
 
 <!-- NOTES -->
@@ -302,9 +302,9 @@
 <script>
 /* ============================================================
    Pulse — single-file SPA
-   v0.1.9
+   v0.1.10
    ============================================================ */
-const APP_VERSION = '0.1.9';
+const APP_VERSION = '0.1.10';
 document.getElementById('ver').textContent = APP_VERSION;
 
 /* ----- Firebase config -----
@@ -345,7 +345,9 @@ const LS = {
   set(k, v){ localStorage.setItem('pulse:'+k, JSON.stringify(v)); },
 };
 
-const CLAUDE_ICON = './claude-logo.jpg';
+const CLAUDE_ICON = './claude-logo.jpg?v=0.1.10';
+const HERMES_ICON = './hermes-logo.jpg?v=0.1.10';
+const LINKEDIN_ICON = 'https://cdn.simpleicons.org/linkedin/0A66C2';
 
 const state = {
   notes:    LS.get('notes', []),
@@ -353,13 +355,13 @@ const state = {
   alarms:   LS.get('alarms', []),
   reminders:LS.get('reminders', []),
   shortcuts:LS.get('shortcuts', [
-    { label:'Gmail',   url:'https://mail.google.com', iconSrc:'https://cdn.simpleicons.org/gmail/EA4335' },
     { label:'Spotify', url:'https://open.spotify.com/', iconSrc:'https://cdn.simpleicons.org/spotify/1DB954' },
     { label:'YouTube', url:'https://www.youtube.com/', iconSrc:'https://cdn.simpleicons.org/youtube/FF0000' },
     { label:'TikTok', url:'https://www.tiktok.com/', iconSrc:'https://cdn.simpleicons.org/tiktok/000000' },
     { label:'Maps',    url:'https://maps.google.com', iconSrc:'https://cdn.simpleicons.org/googlemaps/4285F4' },
     { label:'Claude',  url:'https://claude.ai/', iconSrc:CLAUDE_ICON, icon:'🧠' },
-    { label:'Hermes', url:'tg://resolve', iconSrc:'./hermes-logo.svg' },
+    { label:'Hermes', url:'tg://resolve', iconSrc:HERMES_ICON },
+    { label:'LinkedIn', url:'https://www.linkedin.com/', iconSrc:LINKEDIN_ICON },
     { label:'Facebook', url:'https://facebook.com/', iconSrc:'https://cdn.simpleicons.org/facebook/1877F2' },
   ]),
   loc:      LS.get('loc', null), // {lat, lon, name}
@@ -369,13 +371,13 @@ const state = {
 
 function normalizeShortcuts(){
   const fallbackIcons = {
-    Gmail: 'https://cdn.simpleicons.org/gmail/EA4335',
     Spotify: 'https://cdn.simpleicons.org/spotify/1DB954',
     YouTube: 'https://cdn.simpleicons.org/youtube/FF0000',
     TikTok: 'https://cdn.simpleicons.org/tiktok/000000',
     Maps: 'https://cdn.simpleicons.org/googlemaps/4285F4',
     Claude: CLAUDE_ICON,
-    Hermes: './hermes-logo.svg',
+    Hermes: HERMES_ICON,
+    LinkedIn: LINKEDIN_ICON,
     Facebook: 'https://cdn.simpleicons.org/facebook/1877F2',
   };
   let changed = false;
@@ -383,6 +385,7 @@ function normalizeShortcuts(){
     if (!s) return s;
     if (s.label === 'Claude') return { ...s, iconSrc: fallbackIcons.Claude, icon: '🧠' };
     if (s.label === 'Hermes') return { ...s, iconSrc: fallbackIcons.Hermes, icon: '◉' };
+    if (s.label === 'LinkedIn') return { ...s, iconSrc: fallbackIcons.LinkedIn };
     if (s.label === 'Facebook') return { ...s, iconSrc: fallbackIcons.Facebook };
     if (s.label === 'Spotify' && !s.iconSrc) return { ...s, iconSrc: fallbackIcons.Spotify };
     if (s.label === 'YouTube' && !s.iconSrc) return { ...s, iconSrc: fallbackIcons.YouTube };
@@ -390,15 +393,15 @@ function normalizeShortcuts(){
     return s;
   });
   const has = (label) => shortcuts.some(s => s && s.label === label);
-  if (!has('Gmail')) { shortcuts.push({ label:'Gmail', url:'https://mail.google.com', iconSrc:fallbackIcons.Gmail }); changed = true; }
   if (!has('Spotify')) { shortcuts.push({ label:'Spotify', url:'https://open.spotify.com/', iconSrc:fallbackIcons.Spotify }); changed = true; }
   if (!has('YouTube')) { shortcuts.push({ label:'YouTube', url:'https://www.youtube.com/', iconSrc:fallbackIcons.YouTube }); changed = true; }
   if (!has('TikTok')) { shortcuts.push({ label:'TikTok', url:'https://www.tiktok.com/', iconSrc:fallbackIcons.TikTok }); changed = true; }
   if (!has('Maps')) { shortcuts.push({ label:'Maps', url:'https://maps.google.com', iconSrc:fallbackIcons.Maps }); changed = true; }
   if (!has('Claude')) { shortcuts.push({ label:'Claude', url:'https://claude.ai/', iconSrc:fallbackIcons.Claude }); changed = true; }
   if (!has('Hermes')) { shortcuts.push({ label:'Hermes', url:'https://t.me/', iconSrc:fallbackIcons.Hermes }); changed = true; }
+  if (!has('LinkedIn')) { shortcuts.push({ label:'LinkedIn', url:'https://www.linkedin.com/', iconSrc:fallbackIcons.LinkedIn }); changed = true; }
   if (!has('Facebook')) { shortcuts.push({ label:'Facebook', url:'https://facebook.com/', iconSrc:fallbackIcons.Facebook }); changed = true; }
-  state.shortcuts = shortcuts.filter(s => s.label !== 'Calendar');
+  state.shortcuts = shortcuts.filter(s => s.label !== 'Calendar' && s.label !== 'Gmail');
   if (changed) LS.set('shortcuts', state.shortcuts);
 }
 normalizeShortcuts();
